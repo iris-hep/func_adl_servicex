@@ -6,7 +6,9 @@
         "noqa",
         "qastle",
         "servicex",
+        "setuptools",
         "treeme",
+        "unittests",
         "xaod"
     ],
     "python.pythonPath": "c:\\Users\\gordo\\Documents\\Code\\func_adl_servicex\\.venv\\Scripts\\python.exe"
