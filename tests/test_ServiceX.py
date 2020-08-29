@@ -84,11 +84,18 @@ def test_bad_wrong_call_name():
     assert "ResultBogus" in str(e.value)
 
 
-def test_as_qastle():
+def test_as_qastle_xaod():
     a = ServiceXDatasetSource("junk.root")
     from qastle import python_ast_to_text_ast
     q = python_ast_to_text_ast(a._ast)
     assert q == "(call EventDataset 'ServiceXDatasetSource')"
+
+
+def test_as_qastle_uproot():
+    a = ServiceXDatasetSource("junk.root", 'MainTree')
+    from qastle import python_ast_to_text_ast
+    q = python_ast_to_text_ast(a._ast)
+    assert q == "(call EventDataset 'ServiceXDatasetSource' 'MainTree')"
 
 
 @pytest.mark.asyncio

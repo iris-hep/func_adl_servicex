@@ -1,6 +1,6 @@
 # Code to support running an ast at a remote func-adl server.
 import ast
-from typing import Any, Union
+from typing import Any, Optional, Union
 
 from func_adl import EventDataset
 from qastle import python_ast_to_text_ast
@@ -17,16 +17,20 @@ class ServiceXDatasetSource (EventDataset):
     '''
     A dataset for a func_adl query that is located on a ServiceX backend.
     '''
-    def __init__(self, sx: Union[ServiceXDataset, str]):
+    def __init__(self, sx: Union[ServiceXDataset, str], treename: Optional[str] = None):
         '''
         Create a servicex dataset sequence from a servicex dataset
         '''
-        EventDataset.__init__(self)
+        super().__init__()
 
         if isinstance(sx, str):
             self._ds = ServiceXDataset(sx)
         else:
             self._ds = sx
+
+        # If we are doing a tree, modify the argument list to include a tree.
+        if treename is not None:
+            self._ast.args.append(ast.Str(s=treename))
 
     async def execute_result_async(self, a: ast.AST) -> Any:
         r'''
