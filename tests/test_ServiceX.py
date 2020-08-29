@@ -1,5 +1,7 @@
 # Tests to make sure we get at the functionality in the remote executor.
 import ast
+from func_adl_servicex.ServiceX import FuncADLServerException
+from func_adl.object_stream import ObjectStream
 
 import pandas as pd
 import pytest
@@ -31,11 +33,55 @@ def simple_Servicex_fe_watcher(mocker):
     return m_servicex, p_servicex
 
 
+def test_sx_dataset(mocker):
+    dummy_ds = mocker.MagicMock(spec=ServiceXDataset)
+    a = ServiceXDatasetSource(dummy_ds) \
+        .value(executor=do_exe)
+
+    assert isinstance(a, ast.Call)
+
+
 def test_find_EventDataSet_good():
     a = ServiceXDatasetSource("file://junk.root") \
         .value(executor=do_exe)
 
     assert isinstance(a, ast.Call)
+
+
+def test_bad_call():
+    'Normally expect ast.Call - what if not?'
+    ds = ServiceXDatasetSource("file://junk.root")
+    next = ast.BinOp(left=ds._ast, op=ast.Add(), right=ast.Num(n=10))
+
+    with pytest.raises(FuncADLServerException) as e:
+        ObjectStream(next) \
+            .value()
+
+    assert "Unable" in str(e.value)
+
+
+def test_bad_wrong_call_type():
+    'A call needs to be vs a Name node, not something else?'
+    ds = ServiceXDatasetSource("file://junk.root")
+    next = ast.Call(func=ast.Attribute(value=ds._ast, attr='dude'))
+
+    with pytest.raises(FuncADLServerException) as e:
+        ObjectStream(next) \
+            .value()
+
+    assert "fetch a call from" in str(e.value)
+
+
+def test_bad_wrong_call_name():
+    'A call needs to be vs a Name node, not something else?'
+    ds = ServiceXDatasetSource("file://junk.root")
+    next = ast.Call(func=ast.Name(id='ResultBogus'), args=[ds._ast])
+
+    with pytest.raises(FuncADLServerException) as e:
+        ObjectStream(next) \
+            .value()
+
+    assert "ResultBogus" in str(e.value)
 
 
 def test_as_qastle():
