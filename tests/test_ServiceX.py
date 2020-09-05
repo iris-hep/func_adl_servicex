@@ -32,7 +32,6 @@ def simple_Servicex_fe_watcher(mocker):
     m_servicex.get_data_parquet_async.return_value = [Path('junk1.parquet')]
     p_servicex = mocker.patch('func_adl_servicex.ServiceX.ServiceXDataset',
                               return_value=m_servicex)
-                            
     return m_servicex, p_servicex
 
 

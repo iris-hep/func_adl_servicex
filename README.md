@@ -32,7 +32,7 @@ To use `func_adl` on `servicex`, the only `func_adl` package you only need to in
 See the further information for documentation above to understand how this works. Here is a quick sample that will run against an ATLAS xAOD backend in `servicex` to get out jet pt's
 
 ```python
-<toget>
+<get this done>
 ```
 
 ## Using the uproot backend
