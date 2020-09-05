@@ -1,6 +1,12 @@
 # func_adl_servicex
 
- Send func_adl expressions to a ServiceX endpoint
+Send func_adl expressions to a ServiceX endpoint
+
+[![GitHub Actions Status](https://github.com/iris-hep/func_adl_servicex/workflows/CI/CD/badge.svg)](https://github.com/iris-hep/func_adl_servicex/actions)
+[![Code Coverage](https://codecov.io/gh/iris-hep/func_adl_servicex/graph/badge.svg)](https://codecov.io/gh/iris-hep/func_adl_servicex)
+
+[![PyPI version](https://badge.fury.io/py/func-adl-servicex.svg)](https://badge.fury.io/py/func-adl-servicex)
+[![Supported Python versions](https://img.shields.io/pypi/pyversions/func-adl-servicex.svg)](https://pypi.org/project/func-adl-servicex/)
 
 ## Introduction
 
