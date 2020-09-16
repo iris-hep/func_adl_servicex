@@ -1,13 +1,19 @@
 # setuptools loads some plugins necessary for use here.
 from setuptools import find_packages  # noqa: F401
 from distutils.core import setup
+import os
 
 # Use the readme as the long description.
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
+version = os.getenv('func_adl_servicex_version')
+if version is None:
+    raise Exception('func_adl_servicex_version env var is not set')
+version = version.split('/')[-1]
+
 setup(name="func_adl_servicex",
-      version='1.0.0a1',
+      version=version,
       packages=['func_adl_servicex'],
       scripts=[],
       description="Submit Functional Queries to a ServiceX endpoint.",
@@ -21,7 +27,7 @@ setup(name="func_adl_servicex",
       license="TBD",
       test_suite="tests",
       install_requires=[
-          "func_adl>=1.1b10",
+          "func_adl>=2.0a1",
           "qastle==0.8",
           "servicex>=2.0"
       ],

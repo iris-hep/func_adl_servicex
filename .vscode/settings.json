@@ -4,6 +4,7 @@
         "Topo",
         "asyncio",
         "codecov",
+        "getenv",
         "kchoi",
         "linq",
         "noqa",
