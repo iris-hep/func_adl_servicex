@@ -1,6 +1,7 @@
 {
     "cSpell.words": [
         "Mlll",
+        "ROOTT",
         "Topo",
         "asyncio",
         "codecov",
@@ -17,8 +18,5 @@
         "unittests",
         "xaod"
     ],
-    "python.pythonPath": "c:\\Users\\gordo\\Documents\\Code\\func_adl_servicex\\.venv\\Scripts\\python.exe",
-    "python.testing.pytestArgs": [
-        "--no-cov"
-    ]
+    "python.pythonPath": "c:\\Users\\gordo\\Documents\\Code\\func_adl_servicex\\.venv\\Scripts\\python.exe"
 }
