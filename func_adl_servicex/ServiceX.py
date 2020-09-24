@@ -137,7 +137,7 @@ class ServiceXSourceXAOD(ServiceXDatasetSourceBase):
             cols = a.args[1]
             source = ast.Call(func=ast.Name('ResultTTree'), args=[stream, cols, ast.Str('treeme'), ast.Str('file.root')])
 
-        return python_ast_to_text_ast(qastle.insert_linq_nodes(source))
+        return python_ast_to_text_ast(source)
 
 
 class ServiceXSourceUpROOT(ServiceXDatasetSourceBase):
