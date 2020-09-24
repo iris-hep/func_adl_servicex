@@ -12,7 +12,6 @@ def simple_call():
         .Select('lambda j: j.pt()') \
         .AsAwkwardArray(["JetPt"]) \
         .value()
-    # .AsROOTTTree('file.root', 'tree-me', "JetPt") \
 
     print(data['JetPt'])
 
