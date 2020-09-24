@@ -11,7 +11,7 @@ def simple_call():
     sx_dataset = ServiceXDataset(dataset_uproot, image=uproot_transformer_image)
     ds = ServiceXSourceUpROOT(sx_dataset, "nominal")
     data = ds.Select("lambda e: {'lep_pt_1': e.lep_Pt_1, 'lep_pt_2': e.lep_Pt_2}") \
-        .AsParquetFiles('junk.parquet') \
+        .AsAwkwardArray() \
         .value()
 
     print(data)
