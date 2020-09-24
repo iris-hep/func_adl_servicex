@@ -9,11 +9,12 @@ def simple_call():
     data = ds \
         .SelectMany('lambda e: (e.Jets("AntiKt4EMTopoJets"))') \
         .Where('lambda j: (j.pt()/1000)>30') \
-        .Select('lambda j: (j.pt())') \
-        .AsROOTTTree('file.root', 'tree-me', "JetPt") \
+        .Select('lambda j: j.pt()') \
+        .AsAwkwardArray(["JetPt"]) \
         .value()
+    # .AsROOTTTree('file.root', 'tree-me', "JetPt") \
 
-    print(data)
+    print(data['JetPt'])
 
 
 if __name__ == "__main__":

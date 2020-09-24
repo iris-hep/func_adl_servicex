@@ -10,19 +10,9 @@ Send func_adl expressions to a ServiceX endpoint
 
 ## Introduction
 
-This package contains the single object `ServiceXDataset` which can be used as a root of a `func_adl` expression to query large LHC datasets from an active `ServiceX` instance located on the net.
+This package contains the single object `ServiceXSourceXAOD` and ``ServiceXSourceUpROOT` which can be used as a root of a `func_adl` expression to query large LHC datasets from an active `ServiceX` instance located on the net.
 
-For example, get get all the jet pt's above 30 GeV from an ATLAS xaod:
-
-```python
-example
-```
-
-And to fetch the same from a root tuple file:
-
-```python
-example
-```
+See below for simple examples.
 
 ### Further Information
 
@@ -35,10 +25,21 @@ To use `func_adl` on `servicex`, the only `func_adl` package you only need to in
 
 ## Using the xAOD backend
 
-See the further information for documentation above to understand how this works. Here is a quick sample that will run against an ATLAS xAOD backend in `servicex` to get out jet pt's
+See the further information for documentation above to understand how this works. Here is a quick sample that will run against an ATLAS `xAOD` backend in `servicex` to get out jet pt's for those jets with `pt > 30` GeV.
 
 ```python
-<get this done>
+from func_adl_servicex import ServiceXSourceXAOD
+
+dataset_xaod = "mc15_13TeV:mc15_13TeV.361106.PowhegPythia8EvtGen_AZNLOCTEQ6L1_Zee.merge.DAOD_STDM3.e3601_s2576_s2132_r6630_r6264_p2363_tid05630052_00"
+ds = ServiceXSourceXAOD(dataset_xaod)
+data = ds \
+    .SelectMany('lambda e: (e.Jets("AntiKt4EMTopoJets"))') \
+    .Where('lambda j: (j.pt()/1000)>30') \
+    .Select('lambda j: j.pt()') \
+    .AsAwkwardArray(["JetPt"]) \
+    .value()
+
+print(data['JetPt'])
 ```
 
 ## Using the uproot backend
