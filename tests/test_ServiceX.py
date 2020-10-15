@@ -1,21 +1,22 @@
 # Tests to make sure we get at the functionality in the remote executor.
 import ast
-from pathlib import Path
 
-import pandas as pd
 import pytest
+from func_adl import ObjectStream
 from servicex import ServiceXDataset
 
-from func_adl import ObjectStream
-from func_adl_servicex import ServiceXDatasetSource
-from func_adl_servicex.ServiceX import FuncADLServerException
+from func_adl_servicex.ServiceX import (FuncADLServerException,
+                                        ServiceXDatasetSourceBase,
+                                        ServiceXSourceUpROOT,
+                                        ServiceXSourceXAOD)
 
 
 async def do_exe(a):
     return a
 
 
-def get_async_mock(mocker):
+@pytest.fixture
+def async_mock(mocker):
     import sys
     if sys.version_info[1] <= 7:
         import asyncmock
@@ -24,35 +25,123 @@ def get_async_mock(mocker):
         return mocker.MagicMock
 
 
-@pytest.fixture()
-def simple_Servicex_fe_watcher(mocker):
-    'Mock out the servicex guy'
-    m_servicex = get_async_mock(mocker)(spec=ServiceXDataset)
-    m_servicex.get_data_pandas_df_async.return_value = pd.DataFrame()
-    m_servicex.get_data_parquet_async.return_value = [Path('junk1.parquet')]
-    p_servicex = mocker.patch('func_adl_servicex.ServiceX.ServiceXDataset',
-                              return_value=m_servicex)
-    return m_servicex, p_servicex
+def test_sx_abs(mocker):
+    'Make sure that we cannot build the abstract base class'
+    sx = mocker.MagicMock(spec=ServiceXDataset)
+    with pytest.raises(Exception):
+        ServiceXDatasetSourceBase(sx)  # type: ignore
 
 
-def test_sx_dataset(mocker):
-    dummy_ds = mocker.MagicMock(spec=ServiceXDataset)
-    a = ServiceXDatasetSource(dummy_ds) \
-        .value(executor=do_exe)
-
-    assert isinstance(a, ast.Call)
-
-
-def test_find_EventDataSet_good():
-    a = ServiceXDatasetSource("file://junk.root") \
-        .value(executor=do_exe)
-
-    assert isinstance(a, ast.Call)
+def test_sx_uproot(async_mock):
+    'Make sure we turn the execution into a call with an uproot'
+    sx = async_mock(spec=ServiceXDataset)
+    ds = ServiceXSourceUpROOT(sx, 'my_tree')
+    a = ds.value(executor=do_exe)
+    assert ast.dump(a) == "Call(func=Name(id='EventDataset', ctx=Load()), args=[Constant(value='ServiceXSourceUpROOT'), Str(s='my_tree')], keywords=[])"
 
 
-def test_bad_call():
+def test_sx_uproot_root(async_mock):
+    'Test a request for parquet files from an xAOD guy bombs'
+    sx = async_mock(spec=ServiceXDataset)
+    ds = ServiceXSourceUpROOT(sx, 'my_tree')
+    q = ds.Select("lambda e: e.MET").AsROOTTTree('junk.parquet', 'another_tree', ['met'])
+
+    with pytest.raises(FuncADLServerException) as e:
+        q.value()
+
+    assert 'not supported' in str(e.value)
+
+
+def test_sx_uproot_parquet(async_mock):
+    'Test a request for parquet files from an xAOD guy bombs'
+    sx = async_mock(spec=ServiceXDataset)
+    ds = ServiceXSourceUpROOT(sx, 'my_tree')
+    q = ds.Select("lambda e: e.MET").AsParquetFiles('junk.parquet', ['met'])
+
+    q.value()
+
+    sx.get_data_parquet_async.assert_called_with("(Select (call EventDataset 'ServiceXSourceUpROOT' 'my_tree') (lambda (list e) (attr e 'MET')))")
+
+
+def test_sx_uproot_awkward(async_mock):
+    'Test a request for awkward data from an xAOD guy bombs'
+    sx = async_mock(spec=ServiceXDataset)
+    ds = ServiceXSourceUpROOT(sx, 'my_tree')
+    q = ds.Select("lambda e: e.MET").AsAwkwardArray(['met'])
+
+    q.value()
+
+    sx.get_data_awkward_async.assert_called_with("(Select (call EventDataset 'ServiceXSourceUpROOT' 'my_tree') (lambda (list e) (attr e 'MET')))")
+
+
+def test_sx_uproot_pandas(async_mock):
+    'Test a request for awkward data from an xAOD guy bombs'
+    sx = async_mock(spec=ServiceXDataset)
+    ds = ServiceXSourceUpROOT(sx, 'my_tree')
+    q = ds.Select("lambda e: e.MET").AsPandasDF(['met'])
+
+    q.value()
+
+    sx.get_data_pandas_df_async.assert_called_with("(Select (call EventDataset 'ServiceXSourceUpROOT' 'my_tree') (lambda (list e) (attr e 'MET')))")
+
+
+def test_sx_xaod(async_mock):
+    'Make sure we turn the execution into a call with an uproot'
+    sx = async_mock(spec=ServiceXDataset)
+    ds = ServiceXSourceXAOD(sx)
+    a = ds.value(executor=do_exe)
+    assert ast.dump(a) == "Call(func=Name(id='EventDataset', ctx=Load()), args=[Constant(value='ServiceXSourceXAOD')], keywords=[])"
+
+
+def test_sx_xaod_parquet(async_mock):
+    'Test a request for parquet files from an xAOD guy bombs'
+    sx = async_mock(spec=ServiceXDataset)
+    ds = ServiceXSourceXAOD(sx)
+    q = ds.Select("lambda e: e.MET").AsParquetFiles('junk.parquet', ['met'])
+
+    with pytest.raises(FuncADLServerException) as e:
+        q.value()
+
+    assert 'not supported' in str(e.value)
+
+
+def test_sx_xaod_root(async_mock):
+    'Test a request for root files from an xAOD guy'
+    sx = async_mock(spec=ServiceXDataset)
+    ds = ServiceXSourceXAOD(sx)
+    q = ds.Select("lambda e: e.MET").AsROOTTTree('junk.root', 'my_tree', ['met'])
+
+    q.value()
+
+    sx.get_data_rootfiles_async.assert_called_with("(call ResultTTree (call Select (call EventDataset 'ServiceXSourceXAOD') (lambda (list e) (attr e 'MET'))) (list 'met') 'my_tree' 'junk.root')")
+
+
+def test_sx_xaod_awkward(async_mock):
+    'Test a request for awkward arrays from an xAOD backend'
+    sx = async_mock(spec=ServiceXDataset)
+    ds = ServiceXSourceXAOD(sx)
+    q = ds.Select("lambda e: e.MET").AsAwkwardArray(['met'])
+
+    q.value()
+
+    sx.get_data_awkward_async.assert_called_with("(call ResultTTree (call Select (call EventDataset 'ServiceXSourceXAOD') (lambda (list e) (attr e 'MET'))) (list 'met') 'treeme' 'file.root')")
+
+
+def test_sx_xaod_pandas(async_mock):
+    'Test a request for awkward arrays from an xAOD backend'
+    sx = async_mock(spec=ServiceXDataset)
+    ds = ServiceXSourceXAOD(sx)
+    q = ds.Select("lambda e: e.MET").AsPandasDF(['met'])
+
+    q.value()
+
+    sx.get_data_pandas_df_async.assert_called_with("(call ResultTTree (call Select (call EventDataset 'ServiceXSourceXAOD') (lambda (list e) (attr e 'MET'))) (list 'met') 'treeme' 'file.root')")
+
+
+def test_bad_call(async_mock):
     'Normally expect ast.Call - what if not?'
-    ds = ServiceXDatasetSource("file://junk.root")
+    sx = async_mock(spec=ServiceXDataset)
+    ds = ServiceXSourceXAOD(sx)
     next = ast.BinOp(left=ds.query_ast, op=ast.Add(), right=ast.Num(n=10))
 
     with pytest.raises(FuncADLServerException) as e:
@@ -62,9 +151,10 @@ def test_bad_call():
     assert "Unable" in str(e.value)
 
 
-def test_bad_wrong_call_type():
+def test_bad_wrong_call_type(async_mock):
     'A call needs to be vs a Name node, not something else?'
-    ds = ServiceXDatasetSource("file://junk.root")
+    sx = async_mock(spec=ServiceXDataset)
+    ds = ServiceXSourceXAOD(sx)
     next = ast.Call(func=ast.Attribute(value=ds.query_ast, attr='dude'))
 
     with pytest.raises(FuncADLServerException) as e:
@@ -74,10 +164,25 @@ def test_bad_wrong_call_type():
     assert "fetch a call from" in str(e.value)
 
 
-def test_bad_wrong_call_name():
+def test_ctor_xaod(mocker):
+    call = mocker.MagicMock(return_value=mocker.MagicMock(spec=ServiceXDataset))
+    mocker.patch('func_adl_servicex.ServiceX.ServiceXDataset', call)
+    ServiceXSourceXAOD('did_1221')
+    call.assert_called_with('did_1221', backend_type='xaod')
+
+
+def test_ctor_uproot(mocker):
+    call = mocker.MagicMock(return_value=mocker.MagicMock(spec=ServiceXDataset))
+    mocker.patch('func_adl_servicex.ServiceX.ServiceXDataset', call)
+    ServiceXSourceUpROOT('did_1221', 'a_tree')
+    call.assert_called_with('did_1221', backend_type='uproot')
+
+
+def test_bad_wrong_call_name_right_args(async_mock):
     'A call needs to be vs a Name node, not something else?'
-    ds = ServiceXDatasetSource("file://junk.root")
-    next = ast.Call(func=ast.Name(id='ResultBogus'), args=[ds.query_ast])
+    sx = async_mock(spec=ServiceXDataset)
+    ds = ServiceXSourceXAOD(sx)
+    next = ast.Call(func=ast.Name(id='ResultBogus'), args=[ds.query_ast, ast.Name('cos')])
 
     with pytest.raises(FuncADLServerException) as e:
         ObjectStream(next) \
@@ -86,90 +191,14 @@ def test_bad_wrong_call_name():
     assert "ResultBogus" in str(e.value)
 
 
-def test_as_qastle_xaod():
-    a = ServiceXDatasetSource("junk.root")
-    from qastle import python_ast_to_text_ast
-    q = python_ast_to_text_ast(a.query_ast)
-    assert q == "(call EventDataset 'ServiceXDatasetSource')"
+def test_bad_wrong_call_name(async_mock):
+    'A call needs to be vs a Name node, not something else?'
+    sx = async_mock(spec=ServiceXDataset)
+    ds = ServiceXSourceXAOD(sx)
+    next = ast.Call(func=ast.Name(id='ResultBogus'), args=[ds.query_ast])
 
+    with pytest.raises(FuncADLServerException) as e:
+        ObjectStream(next) \
+            .value()
 
-def test_as_qastle_uproot():
-    a = ServiceXDatasetSource("junk.root", 'MainTree')
-    from qastle import python_ast_to_text_ast
-    q = python_ast_to_text_ast(a.query_ast)
-    assert q == "(call EventDataset 'ServiceXDatasetSource' 'MainTree')"
-
-
-@pytest.mark.asyncio
-async def test_uproot_parquet_query(simple_Servicex_fe_watcher):
-    'Simple parquet based query going to xAOD'
-    f_ds = ServiceXDatasetSource(r'bogus_ds', 'tree-to-scan')
-    r = await f_ds \
-        .SelectMany("lambda e: e.jet_pt") \
-        .Select("lambda j: j / 1000.0") \
-        .AsParquetFiles('junk.parquet', ['JetPt']) \
-        .value_async()
-    assert r is not None
-    assert isinstance(r, list)
-    assert len(r) == 1
-
-    caller = simple_Servicex_fe_watcher[0].get_data_parquet_async
-    caller.assert_called_once()
-    args = caller.call_args[0]
-    assert len(args) == 1
-    assert args[0].find('SelectMany') >= 0
-    assert 'ResultParquet' not in args[0]
-
-
-@pytest.mark.asyncio
-async def test_xaod_pandas_query(simple_Servicex_fe_watcher):
-    'Simple pandas based query'
-    f_ds = ServiceXDatasetSource(r'bogus_ds')
-    r = await f_ds \
-        .SelectMany('lambda e: e.Jets("AntiKt4EMTopoJets")') \
-        .Select('lambda j: j.pt()/1000.0') \
-        .AsPandasDF('JetPt') \
-        .value_async()
-    assert r is not None
-    assert isinstance(r, pd.DataFrame)
-    assert len(r) == 0
-
-    caller = simple_Servicex_fe_watcher[0].get_data_pandas_df_async
-    caller.assert_called_once()
-    args = caller.call_args[0]
-    assert len(args) == 1
-    assert args[0].find('SelectMany') >= 0
-    assert args[0].startswith('(call ResultTTree')
-
-
-@pytest.mark.asyncio
-async def test_xaod_awkward_query(simple_Servicex_fe_watcher):
-    'Simple pandas based query'
-    f_ds = ServiceXDatasetSource(r'bogus_ds')
-    await f_ds \
-        .SelectMany('lambda e: e.Jets("AntiKt4EMTopoJets")') \
-        .Select('lambda j: j.pt()/1000.0') \
-        .AsAwkwardArray('JetPt') \
-        .value_async()
-
-    caller = simple_Servicex_fe_watcher[0].get_data_awkward_async
-    caller.assert_called_once()
-    args = caller.call_args[0]
-    assert len(args) == 1
-    assert args[0].find('SelectMany') >= 0
-    assert args[0].startswith('(call ResultTTree')
-
-
-@pytest.mark.asyncio
-async def test_xaod_scoped_dataset_name(simple_Servicex_fe_watcher):
-    'Simple pandas based query'
-    f_ds = ServiceXDatasetSource(r'user.fork:bogus_ds')
-    _ = await f_ds \
-        .SelectMany('lambda e: e.Jets("AntiKt4EMTopoJets")') \
-        .Select('lambda j: j.pt()/1000.0') \
-        .AsPandasDF('JetPt') \
-        .value_async()
-
-    simple_Servicex_fe_watcher[1].assert_called_once()
-    assert simple_Servicex_fe_watcher[1].call_args[0][0] \
-        == 'user.fork:bogus_ds'
+    assert "ResultBogus" in str(e.value)

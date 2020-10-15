@@ -9,8 +9,9 @@ with open("README.md", "r") as fh:
 
 version = os.getenv('func_adl_servicex_version')
 if version is None:
-    raise Exception('func_adl_servicex_version env var is not set')
-version = version.split('/')[-1]
+    version = '0.1a1'
+else:
+    version = version.split('/')[-1]
 
 setup(name="func_adl_servicex",
       version=version,
@@ -29,7 +30,7 @@ setup(name="func_adl_servicex",
       install_requires=[
           "func_adl>=2.0a1",
           "qastle==0.8",
-          "servicex>=2.0"
+          "servicex>=2.1b1, <3.0a1"
       ],
       extras_require={
           'test': [
