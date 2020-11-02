@@ -135,7 +135,7 @@ class ServiceXSourceXAOD(ServiceXDatasetSourceBase):
                 raise FuncADLServerException(f'Do not understand how to call {cast(ast.Name, a.func).id} - wrong number of arguments')
             stream = a.args[0]
             cols = a.args[1]
-            source = ast.Call(func=ast.Name('ResultTTree'), args=[stream, cols, ast.Str('treeme'), ast.Str('file.root')])
+            source = ast.Call(func=ast.Name(id='ResultTTree', ctx=ast.Load()), args=[stream, cols, ast.Str('treeme'), ast.Str('file.root')])
 
         return python_ast_to_text_ast(source)
 

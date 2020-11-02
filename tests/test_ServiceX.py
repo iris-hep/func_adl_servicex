@@ -182,7 +182,9 @@ def test_bad_wrong_call_name_right_args(async_mock):
     'A call needs to be vs a Name node, not something else?'
     sx = async_mock(spec=ServiceXDataset)
     ds = ServiceXSourceXAOD(sx)
-    next = ast.Call(func=ast.Name(id='ResultBogus'), args=[ds.query_ast, ast.Name('cos')])
+    next = ast.Call(
+        func=ast.Name(id='ResultBogus', ctx=ast.Load()),
+        args=[ds.query_ast, ast.Name(id='cos', ctx=ast.Load())])
 
     with pytest.raises(FuncADLServerException) as e:
         ObjectStream(next) \
