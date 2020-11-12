@@ -1,5 +1,5 @@
-# Tests to make sure we get at the functionality in the remote executor.
 import ast
+import sys
 
 import pytest
 from func_adl import ObjectStream
@@ -37,7 +37,10 @@ def test_sx_uproot(async_mock):
     sx = async_mock(spec=ServiceXDataset)
     ds = ServiceXSourceUpROOT(sx, 'my_tree')
     a = ds.value(executor=do_exe)
-    assert ast.dump(a) == "Call(func=Name(id='EventDataset', ctx=Load()), args=[Constant(value='ServiceXSourceUpROOT'), Str(s='my_tree')], keywords=[])"
+    if sys.version_info < (3, 8):
+        assert ast.dump(a) == "Call(func=Name(id='EventDataset', ctx=Load()), args=[Constant(value='ServiceXSourceUpROOT'), Str(s='my_tree')], keywords=[])"
+    else:
+        assert ast.dump(a) == "Call(func=Name(id='EventDataset', ctx=Load()), args=[Constant(value='ServiceXSourceUpROOT'), Constant(value='my_tree')], keywords=[])"
 
 
 def test_sx_uproot_root(async_mock):
