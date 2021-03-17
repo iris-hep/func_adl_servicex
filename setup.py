@@ -29,8 +29,8 @@ setup(name="func_adl_servicex",
       test_suite="tests",
       install_requires=[
           "func_adl>=2.0, <3.0",
-          "qastle==0.8",
-          "servicex>=2.1, <3.0a1"
+          "qastle>=0.10, <1.0",
+          "servicex>=2.1.2, <3.0a1"
       ],
       extras_require={
           'test': [
