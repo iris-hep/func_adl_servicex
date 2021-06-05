@@ -96,10 +96,13 @@ class ServiceXDatasetSourceBase (EventDataset, ABC):
         return await attr(q_str)
 
 
-class ServiceXSourceXAOD(ServiceXDatasetSourceBase):
-    def __init__(self, sx: Union[ServiceXDataset, str]):
-        '''
-        Create a servicex dataset sequence from a servicex dataset
+class ServiceXSourceCPPBase(ServiceXDatasetSourceBase):
+    def __init__(self, sx: Union[ServiceXDataset, str], backend_type: str):
+        '''Create a C++ backend data set source
+
+        Args:
+            sx (Union[ServiceXDataset, str]): The ServiceX dataset or dataset source.
+            backend_type (str): The backend type, `xaod`, for example, for the ATLAS R21 xaod
         '''
         # Get the base created
         if isinstance(sx, str):
@@ -138,6 +141,22 @@ class ServiceXSourceXAOD(ServiceXDatasetSourceBase):
             source = ast.Call(func=ast.Name(id='ResultTTree', ctx=ast.Load()), args=[stream, cols, ast.Str('treeme'), ast.Str('file.root')])
 
         return python_ast_to_text_ast(source)
+
+
+class ServiceXSourceXAOD(ServiceXSourceCPPBase):
+    def __init__(self, sx: Union[ServiceXDataset, str]):
+        '''
+        Create a servicex dataset sequence from a servicex dataset
+        '''
+        super().__init__(sx, 'xaod')
+
+
+class ServiceXSourceCMSRun1AOD(ServiceXSourceCPPBase):
+    def __init__(self, sx: Union[ServiceXDataset, str]):
+        '''
+        Create a servicex dataset sequence from a servicex dataset
+        '''
+        super().__init__(sx, 'cms_run1_aod')
 
 
 class ServiceXSourceUpROOT(ServiceXDatasetSourceBase):
