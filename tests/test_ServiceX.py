@@ -178,7 +178,7 @@ def test_ctor_cms(mocker):
     call = mocker.MagicMock(return_value=mocker.MagicMock(spec=ServiceXDataset))
     mocker.patch('func_adl_servicex.ServiceX.ServiceXDataset', call)
     ServiceXSourceCMSRun1AOD('did_1221')
-    call.assert_called_with('did_1221', backend_type='xaod')
+    call.assert_called_with('did_1221', backend_type='cms_run1_aod')
 
 
 def test_ctor_uproot(mocker):

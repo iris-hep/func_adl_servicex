@@ -106,7 +106,7 @@ class ServiceXSourceCPPBase(ServiceXDatasetSourceBase):
         '''
         # Get the base created
         if isinstance(sx, str):
-            ds = ServiceXDataset(sx, backend_type='xaod')
+            ds = ServiceXDataset(sx, backend_type=backend_type)
         else:
             ds = sx
 
