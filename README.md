@@ -42,6 +42,26 @@ data = ds \
 print(data['JetPt'])
 ```
 
+## Using the CMS Run 1 AOD backend
+
+See the further information for documentation above to understand how this works. Here is a quick sample that will run against an CMS Run 1 `AOD` backend in `servicex`. It turns against a 6 TB CMS Open Data dataset, selecting global muons with a pT greater than 30 GeV.
+
+```python
+from func_adl_servicex import ServiceXSourceCMSRun1AOD
+
+dataset_xaod = "cernopendata://16"
+ds = ServiceXSourceCMSRun1AOD(dataset_xaod)
+data = ds \
+data = ServiceXSourceCMSRun1AOD("cernopendata://16") \
+    .SelectMany(lambda e: e.TrackMuons("globalMuons")) \
+    .Where(lambda m: m.pt() > 30) \
+    .Select(lambda m: m.pt()) \
+    .AsAwkwardArray(['mu_pt']) \
+    .value()
+
+print(data['mu_pt'])
+```
+
 ## Using the uproot backend
 
 See the further information for documentation above to understand how this works. Here is a quick sample that will run against a ROOT file (TTree) in the `uproot` backend in `servicex` to get out jet pt's. Note that the image name tag is likely wrong here. See XXX to get the current one.
