@@ -174,11 +174,30 @@ def test_ctor_xaod(mocker):
     call.assert_called_with('did_1221', backend_type='xaod')
 
 
+def test_ctor_xaod_alternate_backend(mocker):
+    call = mocker.MagicMock(return_value=mocker.MagicMock(spec=ServiceXDataset))
+    mocker.patch('func_adl_servicex.ServiceX.ServiceXDataset', call)
+    ServiceXSourceXAOD('did_1221', backend='myleftfoot')
+    call.assert_called_with('did_1221', backend_type='myleftfoot')
+
+def test_ctor_cms_run1(mocker):
+    call = mocker.MagicMock(return_value=mocker.MagicMock(spec=ServiceXDataset))
+    mocker.patch('func_adl_servicex.ServiceX.ServiceXDataset', call)
+    ServiceXSourceXAOD('did_1221')
+    call.assert_called_with('did_1221', backend_type='xaod')
+
 def test_ctor_uproot(mocker):
     call = mocker.MagicMock(return_value=mocker.MagicMock(spec=ServiceXDataset))
     mocker.patch('func_adl_servicex.ServiceX.ServiceXDataset', call)
     ServiceXSourceUpROOT('did_1221', 'a_tree')
     call.assert_called_with('did_1221', backend_type='uproot')
+
+
+def test_ctor_uproot_alternate_backend(mocker):
+    call = mocker.MagicMock(return_value=mocker.MagicMock(spec=ServiceXDataset))
+    mocker.patch('func_adl_servicex.ServiceX.ServiceXDataset', call)
+    ServiceXSourceUpROOT('did_1221', 'a_tree', backend='myleftfoot')
+    call.assert_called_with('did_1221', backend_type='myleftfoot')
 
 
 def test_bad_wrong_call_name_right_args(async_mock):
