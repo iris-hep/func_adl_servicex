@@ -144,29 +144,29 @@ class ServiceXSourceCPPBase(ServiceXDatasetSourceBase):
 
 
 class ServiceXSourceXAOD(ServiceXSourceCPPBase):
-    def __init__(self, sx: Union[ServiceXDataset, str]):
+    def __init__(self, sx: Union[ServiceXDataset, str], backend='xaod'):
         '''
         Create a servicex dataset sequence from a servicex dataset
         '''
-        super().__init__(sx, 'xaod')
+        super().__init__(sx, backend)
 
 
 class ServiceXSourceCMSRun1AOD(ServiceXSourceCPPBase):
-    def __init__(self, sx: Union[ServiceXDataset, str]):
+    def __init__(self, sx: Union[ServiceXDataset, str], backend='cms_run1_aod'):
         '''
         Create a servicex dataset sequence from a servicex dataset
         '''
-        super().__init__(sx, 'cms_run1_aod')
+        super().__init__(sx, backend)
 
 
 class ServiceXSourceUpROOT(ServiceXDatasetSourceBase):
-    def __init__(self, sx: Union[ServiceXDataset, str], treename: str):
+    def __init__(self, sx: Union[ServiceXDataset, str], treename: str, backend='uproot'):
         '''
         Create a servicex dataset sequence from a servicex dataset
         '''
         # Get the base created.
         if isinstance(sx, str):
-            ds = ServiceXDataset(sx, backend_type='uproot')
+            ds = ServiceXDataset(sx, backend_type=backend)
         else:
             ds = sx
 
