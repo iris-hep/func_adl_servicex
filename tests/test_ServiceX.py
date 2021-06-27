@@ -6,7 +6,7 @@ from func_adl import ObjectStream
 from servicex import ServiceXDataset
 
 from func_adl_servicex.ServiceX import (FuncADLServerException,
-                                        ServiceXDatasetSourceBase,
+                                        ServiceXDatasetSourceBase, ServiceXSourceCMSRun1AOD,
                                         ServiceXSourceUpROOT,
                                         ServiceXSourceXAOD)
 
@@ -180,11 +180,27 @@ def test_ctor_xaod_alternate_backend(mocker):
     ServiceXSourceXAOD('did_1221', backend='myleftfoot')
     call.assert_called_with('did_1221', backend_type='myleftfoot')
 
+
 def test_ctor_cms_run1(mocker):
     call = mocker.MagicMock(return_value=mocker.MagicMock(spec=ServiceXDataset))
     mocker.patch('func_adl_servicex.ServiceX.ServiceXDataset', call)
     ServiceXSourceXAOD('did_1221')
     call.assert_called_with('did_1221', backend_type='xaod')
+
+
+def test_ctor_cms(mocker):
+    call = mocker.MagicMock(return_value=mocker.MagicMock(spec=ServiceXDataset))
+    mocker.patch('func_adl_servicex.ServiceX.ServiceXDataset', call)
+    ServiceXSourceCMSRun1AOD('did_1221')
+    call.assert_called_with('did_1221', backend_type='cms_run1_aod')
+
+
+def test_ctor_cms_alternate_backend(mocker):
+    call = mocker.MagicMock(return_value=mocker.MagicMock(spec=ServiceXDataset))
+    mocker.patch('func_adl_servicex.ServiceX.ServiceXDataset', call)
+    ServiceXSourceCMSRun1AOD('did_1221', backend='fork')
+    call.assert_called_with('did_1221', backend_type='fork')
+
 
 def test_ctor_uproot(mocker):
     call = mocker.MagicMock(return_value=mocker.MagicMock(spec=ServiceXDataset))
