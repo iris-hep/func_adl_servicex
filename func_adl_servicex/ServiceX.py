@@ -9,7 +9,7 @@ import qastle
 from func_adl import EventDataset
 from qastle import python_ast_to_text_ast
 from servicex import ServiceXDataset
-from servicex.utils import DatasetType
+from servicex import DatasetType
 
 
 class FuncADLServerException (Exception):

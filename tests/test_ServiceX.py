@@ -5,8 +5,8 @@ import pytest
 from func_adl import ObjectStream
 from servicex import ServiceXDataset
 
-from func_adl_servicex.ServiceX import (FuncADLServerException,
-                                        ServiceXDatasetSourceBase, ServiceXSourceCMSRun1AOD,
+from func_adl_servicex import (FuncADLServerException,
+                                        ServiceXSourceCMSRun1AOD,
                                         ServiceXSourceUpROOT,
                                         ServiceXSourceXAOD)
 
