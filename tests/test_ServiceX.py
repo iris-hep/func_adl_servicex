@@ -66,6 +66,19 @@ def test_sx_uproot_parquet(async_mock):
     sx.get_data_parquet_async.assert_called_with("(Select (call EventDataset 'my_tree') (lambda (list e) (attr e 'MET')))")
 
 
+def test_sx_uproot_parquet_qastle(async_mock):
+    'Test a request for parquet files from an xAOD guy bombs'
+    sx = async_mock(spec=ServiceXDataset)
+    ds = ServiceXSourceUpROOT(sx, 'my_tree')
+    ds.return_qastle = True
+    q = ds.Select("lambda e: e.MET").AsParquetFiles('junk.parquet', ['met'])
+
+    result = q.value()
+
+    assert result == "(Select (call EventDataset 'my_tree') (lambda (list e) (attr e 'MET')))"
+    sx.get_data_parquet_async.assert_not_called()
+
+
 def test_sx_uproot_awkward(async_mock):
     'Test a request for awkward data from an xAOD guy bombs'
     sx = async_mock(spec=ServiceXDataset)
