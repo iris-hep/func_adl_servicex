@@ -64,7 +64,18 @@ def test_sx_uproot_parquet(async_mock):
 
     q.value()
 
-    sx.get_data_parquet_async.assert_called_with("(Select (call EventDataset 'my_tree') (lambda (list e) (attr e 'MET')))")
+    sx.get_data_parquet_async.assert_called_with("(Select (call EventDataset 'my_tree') (lambda (list e) (attr e 'MET')))", title=None)
+
+
+def test_sx_uproot_parquet_title(async_mock):
+    'Test a request for parquet files from an xAOD guy bombs'
+    sx = async_mock(spec=ServiceXDataset)
+    ds = ServiceXSourceUpROOT(sx, 'my_tree')
+    q = ds.Select("lambda e: e.MET").AsParquetFiles('junk.parquet', ['met'])
+
+    q.value(title="no way")
+
+    sx.get_data_parquet_async.assert_called_with("(Select (call EventDataset 'my_tree') (lambda (list e) (attr e 'MET')))", title="no way")
 
 
 def test_sx_uproot_awkward(async_mock):
@@ -75,7 +86,7 @@ def test_sx_uproot_awkward(async_mock):
 
     q.value()
 
-    sx.get_data_awkward_async.assert_called_with("(Select (call EventDataset 'my_tree') (lambda (list e) (attr e 'MET')))")
+    sx.get_data_awkward_async.assert_called_with("(Select (call EventDataset 'my_tree') (lambda (list e) (attr e 'MET')))", title=None)
 
 
 def test_sx_uproot_pandas(async_mock):
@@ -86,7 +97,7 @@ def test_sx_uproot_pandas(async_mock):
 
     q.value()
 
-    sx.get_data_pandas_df_async.assert_called_with("(Select (call EventDataset 'my_tree') (lambda (list e) (attr e 'MET')))")
+    sx.get_data_pandas_df_async.assert_called_with("(Select (call EventDataset 'my_tree') (lambda (list e) (attr e 'MET')))", title=None)
 
 
 def test_sx_xaod(async_mock):
@@ -117,7 +128,7 @@ def test_sx_xaod_root(async_mock):
 
     q.value()
 
-    sx.get_data_rootfiles_async.assert_called_with("(call ResultTTree (call Select (call EventDataset) (lambda (list e) (attr e 'MET'))) (list 'met') 'my_tree' 'junk.root')")
+    sx.get_data_rootfiles_async.assert_called_with("(call ResultTTree (call Select (call EventDataset) (lambda (list e) (attr e 'MET'))) (list 'met') 'my_tree' 'junk.root')", title=None)
 
 
 def test_sx_xaod_awkward(async_mock):
@@ -128,7 +139,7 @@ def test_sx_xaod_awkward(async_mock):
 
     q.value()
 
-    sx.get_data_awkward_async.assert_called_with("(call ResultTTree (call Select (call EventDataset) (lambda (list e) (attr e 'MET'))) (list 'met') 'treeme' 'file.root')")
+    sx.get_data_awkward_async.assert_called_with("(call ResultTTree (call Select (call EventDataset) (lambda (list e) (attr e 'MET'))) (list 'met') 'treeme' 'file.root')", title=None)
 
 
 def test_sx_xaod_pandas(async_mock):
@@ -139,7 +150,7 @@ def test_sx_xaod_pandas(async_mock):
 
     q.value()
 
-    sx.get_data_pandas_df_async.assert_called_with("(call ResultTTree (call Select (call EventDataset) (lambda (list e) (attr e 'MET'))) (list 'met') 'treeme' 'file.root')")
+    sx.get_data_pandas_df_async.assert_called_with("(call ResultTTree (call Select (call EventDataset) (lambda (list e) (attr e 'MET'))) (list 'met') 'treeme' 'file.root')", title=None)
 
 
 def test_ctor_xaod(mocker):

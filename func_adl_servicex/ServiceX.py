@@ -94,7 +94,7 @@ class ServiceXDatasetSourceBase (EventDataset, ABC):
         attr = getattr(self._ds, name)
 
         # Run it!
-        return await attr(q_str)
+        return await attr(q_str, title=title)
 
 
 class ServiceXSourceCPPBase(ServiceXDatasetSourceBase):
