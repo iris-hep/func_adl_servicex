@@ -38,9 +38,9 @@ def test_sx_uproot(async_mock):
     ds = ServiceXSourceUpROOT(sx, 'my_tree')
     a = ds.value(executor=do_exe)
     if sys.version_info < (3, 8):
-        assert ast.dump(a) == "Call(func=Name(id='EventDataset', ctx=Load()), args=[Constant(value='ServiceXSourceUpROOT'), Str(s='my_tree')], keywords=[])"
+        assert ast.dump(a) == "Call(func=Name(id='EventDataset', ctx=Load()), args=[Str(s='my_tree')], keywords=[])"
     else:
-        assert ast.dump(a) == "Call(func=Name(id='EventDataset', ctx=Load()), args=[Constant(value='ServiceXSourceUpROOT'), Constant(value='my_tree')], keywords=[])"
+        assert ast.dump(a) == "Call(func=Name(id='EventDataset', ctx=Load()), args=[Constant(value='my_tree')], keywords=[])"
 
 
 def test_sx_uproot_root(async_mock):
@@ -63,7 +63,7 @@ def test_sx_uproot_parquet(async_mock):
 
     q.value()
 
-    sx.get_data_parquet_async.assert_called_with("(Select (call EventDataset 'ServiceXSourceUpROOT' 'my_tree') (lambda (list e) (attr e 'MET')))")
+    sx.get_data_parquet_async.assert_called_with("(Select (call EventDataset 'my_tree') (lambda (list e) (attr e 'MET')))")
 
 
 def test_sx_uproot_awkward(async_mock):
@@ -74,7 +74,7 @@ def test_sx_uproot_awkward(async_mock):
 
     q.value()
 
-    sx.get_data_awkward_async.assert_called_with("(Select (call EventDataset 'ServiceXSourceUpROOT' 'my_tree') (lambda (list e) (attr e 'MET')))")
+    sx.get_data_awkward_async.assert_called_with("(Select (call EventDataset 'my_tree') (lambda (list e) (attr e 'MET')))")
 
 
 def test_sx_uproot_pandas(async_mock):
@@ -85,7 +85,7 @@ def test_sx_uproot_pandas(async_mock):
 
     q.value()
 
-    sx.get_data_pandas_df_async.assert_called_with("(Select (call EventDataset 'ServiceXSourceUpROOT' 'my_tree') (lambda (list e) (attr e 'MET')))")
+    sx.get_data_pandas_df_async.assert_called_with("(Select (call EventDataset 'my_tree') (lambda (list e) (attr e 'MET')))")
 
 
 def test_sx_xaod(async_mock):
@@ -93,7 +93,7 @@ def test_sx_xaod(async_mock):
     sx = async_mock(spec=ServiceXDataset)
     ds = ServiceXSourceXAOD(sx)
     a = ds.value(executor=do_exe)
-    assert ast.dump(a) == "Call(func=Name(id='EventDataset', ctx=Load()), args=[Constant(value='ServiceXSourceXAOD')], keywords=[])"
+    assert ast.dump(a) == "Call(func=Name(id='EventDataset', ctx=Load()), args=[], keywords=[])"
 
 
 def test_sx_xaod_parquet(async_mock):
@@ -116,7 +116,7 @@ def test_sx_xaod_root(async_mock):
 
     q.value()
 
-    sx.get_data_rootfiles_async.assert_called_with("(call ResultTTree (call Select (call EventDataset 'ServiceXSourceXAOD') (lambda (list e) (attr e 'MET'))) (list 'met') 'my_tree' 'junk.root')")
+    sx.get_data_rootfiles_async.assert_called_with("(call ResultTTree (call Select (call EventDataset) (lambda (list e) (attr e 'MET'))) (list 'met') 'my_tree' 'junk.root')")
 
 
 def test_sx_xaod_awkward(async_mock):
@@ -127,7 +127,7 @@ def test_sx_xaod_awkward(async_mock):
 
     q.value()
 
-    sx.get_data_awkward_async.assert_called_with("(call ResultTTree (call Select (call EventDataset 'ServiceXSourceXAOD') (lambda (list e) (attr e 'MET'))) (list 'met') 'treeme' 'file.root')")
+    sx.get_data_awkward_async.assert_called_with("(call ResultTTree (call Select (call EventDataset) (lambda (list e) (attr e 'MET'))) (list 'met') 'treeme' 'file.root')")
 
 
 def test_sx_xaod_pandas(async_mock):
@@ -138,33 +138,7 @@ def test_sx_xaod_pandas(async_mock):
 
     q.value()
 
-    sx.get_data_pandas_df_async.assert_called_with("(call ResultTTree (call Select (call EventDataset 'ServiceXSourceXAOD') (lambda (list e) (attr e 'MET'))) (list 'met') 'treeme' 'file.root')")
-
-
-def test_bad_call(async_mock):
-    'Normally expect ast.Call - what if not?'
-    sx = async_mock(spec=ServiceXDataset)
-    ds = ServiceXSourceXAOD(sx)
-    next = ast.BinOp(left=ds.query_ast, op=ast.Add(), right=ast.Num(n=10))
-
-    with pytest.raises(FuncADLServerException) as e:
-        ObjectStream(next) \
-            .value()
-
-    assert "Unable" in str(e.value)
-
-
-def test_bad_wrong_call_type(async_mock):
-    'A call needs to be vs a Name node, not something else?'
-    sx = async_mock(spec=ServiceXDataset)
-    ds = ServiceXSourceXAOD(sx)
-    next = ast.Call(func=ast.Attribute(value=ds.query_ast, attr='dude'))
-
-    with pytest.raises(FuncADLServerException) as e:
-        ObjectStream(next) \
-            .value()
-
-    assert "fetch a call from" in str(e.value)
+    sx.get_data_pandas_df_async.assert_called_with("(call ResultTTree (call Select (call EventDataset) (lambda (list e) (attr e 'MET'))) (list 'met') 'treeme' 'file.root')")
 
 
 def test_ctor_xaod(mocker):
