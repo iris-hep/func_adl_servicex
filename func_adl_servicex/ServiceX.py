@@ -2,7 +2,7 @@
 from abc import ABC, abstractmethod
 import ast
 import logging
-from typing import Any, Union, cast
+from typing import Any, Optional, Union, cast
 
 import qastle
 from qastle import python_ast_to_text_ast
@@ -60,7 +60,7 @@ class ServiceXDatasetSourceBase (EventDataset, ABC):
             str: Qastle that should be sent to servicex
         '''
 
-    async def execute_result_async(self, a: ast.AST) -> Any:
+    async def execute_result_async(self, a: ast.AST, title: Optional[str] = None) -> Any:
         r'''
         Run a query against a func-adl ServiceX backend. The appropriate part of the AST is
         shipped there, and it is interpreted.
@@ -68,6 +68,7 @@ class ServiceXDatasetSourceBase (EventDataset, ABC):
         Arguments:
 
             a:                  The ast that we should evaluate
+            title:              Optional title to be added to the transform
 
         Returns:
             v                   Whatever the data that is requested (awkward arrays, etc.)

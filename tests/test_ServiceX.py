@@ -1,5 +1,6 @@
 import ast
 import sys
+from typing import Optional
 
 import pytest
 from func_adl import ObjectStream
@@ -11,7 +12,7 @@ from func_adl_servicex.ServiceX import (FuncADLServerException,
                                         ServiceXSourceXAOD)
 
 
-async def do_exe(a):
+async def do_exe(a, title: Optional[str] = None):
     return a
 
 
