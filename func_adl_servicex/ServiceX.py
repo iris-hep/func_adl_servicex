@@ -73,11 +73,14 @@ class ServiceXDatasetSourceBase (EventDataset, ABC):
             v                   Whatever the data that is requested (awkward arrays, etc.)
         '''
         # Now, make sure the ast is formed in a way we can deal with.
-        if not isinstance(a, ast.Call):
-            raise FuncADLServerException(f'Unable to use ServiceX to fetch a {a}.')
+        # TODO: these tests aren't relavent because before this is called, func_adl's
+        # get_executor will bomb if there isn't a call. Need to remove this code, and
+        # improve errors in func_adl.
+        # if not isinstance(a, ast.Call):
+        #     raise FuncADLServerException(f'Unable to use ServiceX to fetch a {a}.')
         a_func = a.func
-        if not isinstance(a_func, ast.Name):
-            raise FuncADLServerException(f'Unable to use ServiceX to fetch a call from {ast.dump(a_func)}')
+        # if not isinstance(a_func, ast.Name):
+        #     raise FuncADLServerException(f'Unable to use ServiceX to fetch a call from {ast.dump(a_func)}')
 
         # Check the call is legal for this datasource.
         self.check_data_format_request(a_func.id)
