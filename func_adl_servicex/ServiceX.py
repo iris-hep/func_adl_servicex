@@ -1,14 +1,15 @@
 # Code to support running an ast at a remote func-adl server.
-from abc import ABC, abstractmethod
 import ast
 import logging
+from abc import ABC, abstractmethod
+from collections import Iterable
 from typing import Any, Union, cast
 
 import qastle
+from func_adl import EventDataset
 from qastle import python_ast_to_text_ast
 from servicex import ServiceXDataset
-
-from func_adl import EventDataset
+from servicex import DatasetType
 
 
 class FuncADLServerException (Exception):
@@ -100,7 +101,7 @@ class ServiceXDatasetSourceBase (EventDataset, ABC):
 
 
 class ServiceXSourceCPPBase(ServiceXDatasetSourceBase):
-    def __init__(self, sx: Union[ServiceXDataset, str], backend_type: str):
+    def __init__(self, sx: Union[DatasetType, str], backend_type: str):
         '''Create a C++ backend data set source
 
         Args:
@@ -108,7 +109,7 @@ class ServiceXSourceCPPBase(ServiceXDatasetSourceBase):
             backend_type (str): The backend type, `xaod`, for example, for the ATLAS R21 xaod
         '''
         # Get the base created
-        if isinstance(sx, str):
+        if isinstance(sx, (str, Iterable)):
             ds = ServiceXDataset(sx, backend_type=backend_type)
         else:
             ds = sx
@@ -147,7 +148,7 @@ class ServiceXSourceCPPBase(ServiceXDatasetSourceBase):
 
 
 class ServiceXSourceXAOD(ServiceXSourceCPPBase):
-    def __init__(self, sx: Union[ServiceXDataset, str], backend='xaod'):
+    def __init__(self, sx: Union[DatasetType, str], backend='xaod'):
         '''
         Create a servicex dataset sequence from a servicex dataset
         '''
@@ -155,7 +156,7 @@ class ServiceXSourceXAOD(ServiceXSourceCPPBase):
 
 
 class ServiceXSourceCMSRun1AOD(ServiceXSourceCPPBase):
-    def __init__(self, sx: Union[ServiceXDataset, str], backend='cms_run1_aod'):
+    def __init__(self, sx: Union[DatasetType, str], backend='cms_run1_aod'):
         '''
         Create a servicex dataset sequence from a servicex dataset
         '''
@@ -163,12 +164,12 @@ class ServiceXSourceCMSRun1AOD(ServiceXSourceCPPBase):
 
 
 class ServiceXSourceUpROOT(ServiceXDatasetSourceBase):
-    def __init__(self, sx: Union[ServiceXDataset, str], treename: str, backend='uproot'):
+    def __init__(self, sx: Union[ServiceXDataset, DatasetType], treename: str, backend='uproot'):
         '''
         Create a servicex dataset sequence from a servicex dataset
         '''
         # Get the base created.
-        if isinstance(sx, str):
+        if isinstance(sx, (str, Iterable)):
             ds = ServiceXDataset(sx, backend_type=backend)
         else:
             ds = sx
