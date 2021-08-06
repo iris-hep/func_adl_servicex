@@ -37,6 +37,15 @@ class ServiceXDatasetSourceBase (EventDataset, ABC):
         super().__init__()
 
         self._ds = sx
+        self._return_qastle = False
+
+    @property
+    def return_qastle(self):
+        return self._return_qastle
+
+    @return_qastle.setter
+    def return_qastle(self, value: bool):
+        self._return_qastle = value
 
     @abstractmethod
     def check_data_format_request(self, f_name: str):
@@ -90,9 +99,15 @@ class ServiceXDatasetSourceBase (EventDataset, ABC):
         q_str = self.generate_qastle(a)
         logging.getLogger(__name__).debug(f'Qastle string sent to servicex: {q_str}')
 
-        # Next, run it, depending on the function
+        # Find the function we need to run against.
         if a_func.id not in self._ds_map:
             raise FuncADLServerException(f'Internal error - asked for {a_func.id} - but this dataset does not support it.')
+
+        # If only qastle is wanted, return here.
+        if self.return_qastle:
+            return q_str
+
+        # Next, run it, depending on the function
         name = self._ds_map[a_func.id]
         attr = getattr(self._ds, name)
 
