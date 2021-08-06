@@ -1,14 +1,16 @@
 # Code to support running an ast at a remote func-adl server.
-from abc import ABC, abstractmethod
 import ast
 import logging
 from typing import Any, Optional, Union, cast
+from abc import ABC, abstractmethod
+from collections import Iterable
+from typing import Any, Union, cast
 
 import qastle
+from func_adl import EventDataset
 from qastle import python_ast_to_text_ast
 from servicex import ServiceXDataset
-
-from func_adl import EventDataset
+from servicex import DatasetType
 
 
 class FuncADLServerException (Exception):
@@ -36,6 +38,15 @@ class ServiceXDatasetSourceBase (EventDataset, ABC):
         super().__init__()
 
         self._ds = sx
+        self._return_qastle = False
+
+    @property
+    def return_qastle(self):
+        return self._return_qastle
+
+    @return_qastle.setter
+    def return_qastle(self, value: bool):
+        self._return_qastle = value
 
     @abstractmethod
     def check_data_format_request(self, f_name: str):
@@ -74,11 +85,14 @@ class ServiceXDatasetSourceBase (EventDataset, ABC):
             v                   Whatever the data that is requested (awkward arrays, etc.)
         '''
         # Now, make sure the ast is formed in a way we can deal with.
-        if not isinstance(a, ast.Call):
-            raise FuncADLServerException(f'Unable to use ServiceX to fetch a {a}.')
+        # TODO: these tests aren't relavent because before this is called, func_adl's
+        # get_executor will bomb if there isn't a call. Need to remove this code, and
+        # improve errors in func_adl.
+        # if not isinstance(a, ast.Call):
+        #     raise FuncADLServerException(f'Unable to use ServiceX to fetch a {a}.')
         a_func = a.func
-        if not isinstance(a_func, ast.Name):
-            raise FuncADLServerException(f'Unable to use ServiceX to fetch a call from {ast.dump(a_func)}')
+        # if not isinstance(a_func, ast.Name):
+        #     raise FuncADLServerException(f'Unable to use ServiceX to fetch a call from {ast.dump(a_func)}')
 
         # Check the call is legal for this datasource.
         self.check_data_format_request(a_func.id)
@@ -87,9 +101,15 @@ class ServiceXDatasetSourceBase (EventDataset, ABC):
         q_str = self.generate_qastle(a)
         logging.getLogger(__name__).debug(f'Qastle string sent to servicex: {q_str}')
 
-        # Next, run it, depending on the function
+        # Find the function we need to run against.
         if a_func.id not in self._ds_map:
             raise FuncADLServerException(f'Internal error - asked for {a_func.id} - but this dataset does not support it.')
+
+        # If only qastle is wanted, return here.
+        if self.return_qastle:
+            return q_str
+
+        # Next, run it, depending on the function
         name = self._ds_map[a_func.id]
         attr = getattr(self._ds, name)
 
@@ -98,7 +118,7 @@ class ServiceXDatasetSourceBase (EventDataset, ABC):
 
 
 class ServiceXSourceCPPBase(ServiceXDatasetSourceBase):
-    def __init__(self, sx: Union[ServiceXDataset, str], backend_type: str):
+    def __init__(self, sx: Union[DatasetType, str], backend_type: str):
         '''Create a C++ backend data set source
 
         Args:
@@ -106,7 +126,7 @@ class ServiceXSourceCPPBase(ServiceXDatasetSourceBase):
             backend_type (str): The backend type, `xaod`, for example, for the ATLAS R21 xaod
         '''
         # Get the base created
-        if isinstance(sx, str):
+        if isinstance(sx, (str, Iterable)):
             ds = ServiceXDataset(sx, backend_type=backend_type)
         else:
             ds = sx
@@ -166,7 +186,7 @@ class ServiceXSourceUpROOT(ServiceXDatasetSourceBase):
         Create a servicex dataset sequence from a servicex dataset
         '''
         # Get the base created.
-        if isinstance(sx, str):
+        if isinstance(sx, (str, Iterable)):
             ds = ServiceXDataset(sx, backend_type=backend)
         else:
             ds = sx
