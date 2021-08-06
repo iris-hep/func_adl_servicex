@@ -1,16 +1,15 @@
 # Code to support running an ast at a remote func-adl server.
 import ast
 import logging
-from typing import Any, Optional, Union, cast
 from abc import ABC, abstractmethod
 from collections import Iterable
-from typing import Any, Union, cast
+from typing import Any, Optional, Union, cast
 
 import qastle
 from func_adl import EventDataset
 from qastle import python_ast_to_text_ast
 from servicex import ServiceXDataset
-from servicex import DatasetType
+from servicex.utils import DatasetType
 
 
 class FuncADLServerException (Exception):
@@ -71,7 +70,7 @@ class ServiceXDatasetSourceBase (EventDataset, ABC):
             str: Qastle that should be sent to servicex
         '''
 
-    async def execute_result_async(self, a: ast.AST, title: Optional[str] = None) -> Any:
+    async def execute_result_async(self, a: ast.Call, title: Optional[str] = None) -> Any:
         r'''
         Run a query against a func-adl ServiceX backend. The appropriate part of the AST is
         shipped there, and it is interpreted.
@@ -84,17 +83,8 @@ class ServiceXDatasetSourceBase (EventDataset, ABC):
         Returns:
             v                   Whatever the data that is requested (awkward arrays, etc.)
         '''
-        # Now, make sure the ast is formed in a way we can deal with.
-        # TODO: these tests aren't relavent because before this is called, func_adl's
-        # get_executor will bomb if there isn't a call. Need to remove this code, and
-        # improve errors in func_adl.
-        # if not isinstance(a, ast.Call):
-        #     raise FuncADLServerException(f'Unable to use ServiceX to fetch a {a}.')
-        a_func = a.func
-        # if not isinstance(a_func, ast.Name):
-        #     raise FuncADLServerException(f'Unable to use ServiceX to fetch a call from {ast.dump(a_func)}')
-
         # Check the call is legal for this datasource.
+        a_func = cast(ast.Name, a.func)
         self.check_data_format_request(a_func.id)
 
         # Get the qastle string for this query
@@ -118,16 +108,16 @@ class ServiceXDatasetSourceBase (EventDataset, ABC):
 
 
 class ServiceXSourceCPPBase(ServiceXDatasetSourceBase):
-    def __init__(self, sx: Union[DatasetType, str], backend_type: str):
+    def __init__(self, sx: Union[ServiceXDataset, DatasetType], backend_name: str):
         '''Create a C++ backend data set source
 
         Args:
             sx (Union[ServiceXDataset, str]): The ServiceX dataset or dataset source.
-            backend_type (str): The backend type, `xaod`, for example, for the ATLAS R21 xaod
+            backend_name (str): The backend type, `xaod`, for example, for the ATLAS R21 xaod
         '''
         # Get the base created
         if isinstance(sx, (str, Iterable)):
-            ds = ServiceXDataset(sx, backend_type=backend_type)
+            ds = ServiceXDataset(sx, backend_name=backend_name)
         else:
             ds = sx
 
@@ -165,7 +155,7 @@ class ServiceXSourceCPPBase(ServiceXDatasetSourceBase):
 
 
 class ServiceXSourceXAOD(ServiceXSourceCPPBase):
-    def __init__(self, sx: Union[ServiceXDataset, str], backend='xaod'):
+    def __init__(self, sx: Union[ServiceXDataset, DatasetType], backend='xaod'):
         '''
         Create a servicex dataset sequence from a servicex dataset
         '''
@@ -173,7 +163,7 @@ class ServiceXSourceXAOD(ServiceXSourceCPPBase):
 
 
 class ServiceXSourceCMSRun1AOD(ServiceXSourceCPPBase):
-    def __init__(self, sx: Union[ServiceXDataset, str], backend='cms_run1_aod'):
+    def __init__(self, sx: Union[ServiceXDataset, DatasetType], backend='cms_run1_aod'):
         '''
         Create a servicex dataset sequence from a servicex dataset
         '''
@@ -181,13 +171,13 @@ class ServiceXSourceCMSRun1AOD(ServiceXSourceCPPBase):
 
 
 class ServiceXSourceUpROOT(ServiceXDatasetSourceBase):
-    def __init__(self, sx: Union[ServiceXDataset, str], treename: str, backend='uproot'):
+    def __init__(self, sx: Union[ServiceXDataset, DatasetType], treename: str, backend='uproot'):
         '''
         Create a servicex dataset sequence from a servicex dataset
         '''
         # Get the base created.
         if isinstance(sx, (str, Iterable)):
-            ds = ServiceXDataset(sx, backend_type=backend)
+            ds = ServiceXDataset(sx, backend_name=backend)
         else:
             ds = sx
 
