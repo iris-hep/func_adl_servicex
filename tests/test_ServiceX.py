@@ -1,17 +1,19 @@
 import ast
+from func_adl_servicex.ServiceX import ServiceXDatasetSourceBase
 import sys
+from typing import Optional
 
 import pytest
 from func_adl import ObjectStream
 from servicex import ServiceXDataset
 
 from func_adl_servicex import (FuncADLServerException,
-                                        ServiceXSourceCMSRun1AOD,
-                                        ServiceXSourceUpROOT,
-                                        ServiceXSourceXAOD)
+                               ServiceXSourceUpROOT,
+                               ServiceXSourceCMSRun1AOD,
+                               ServiceXSourceXAOD)
 
 
-async def do_exe(a):
+async def do_exe(a, title: Optional[str] = None):
     return a
 
 
@@ -63,7 +65,18 @@ def test_sx_uproot_parquet(async_mock):
 
     q.value()
 
-    sx.get_data_parquet_async.assert_called_with("(Select (call EventDataset 'my_tree') (lambda (list e) (attr e 'MET')))")
+    sx.get_data_parquet_async.assert_called_with("(Select (call EventDataset 'my_tree') (lambda (list e) (attr e 'MET')))", title=None)
+
+
+def test_sx_uproot_parquet_title(async_mock):
+    'Test a request for parquet files from an xAOD guy bombs'
+    sx = async_mock(spec=ServiceXDataset)
+    ds = ServiceXSourceUpROOT(sx, 'my_tree')
+    q = ds.Select("lambda e: e.MET").AsParquetFiles('junk.parquet', ['met'])
+
+    q.value(title="no way")
+
+    sx.get_data_parquet_async.assert_called_with("(Select (call EventDataset 'my_tree') (lambda (list e) (attr e 'MET')))", title="no way")
 
 
 def test_sx_uproot_parquet_qastle(async_mock):
@@ -87,7 +100,7 @@ def test_sx_uproot_awkward(async_mock):
 
     q.value()
 
-    sx.get_data_awkward_async.assert_called_with("(Select (call EventDataset 'my_tree') (lambda (list e) (attr e 'MET')))")
+    sx.get_data_awkward_async.assert_called_with("(Select (call EventDataset 'my_tree') (lambda (list e) (attr e 'MET')))", title=None)
 
 
 def test_sx_uproot_pandas(async_mock):
@@ -98,7 +111,7 @@ def test_sx_uproot_pandas(async_mock):
 
     q.value()
 
-    sx.get_data_pandas_df_async.assert_called_with("(Select (call EventDataset 'my_tree') (lambda (list e) (attr e 'MET')))")
+    sx.get_data_pandas_df_async.assert_called_with("(Select (call EventDataset 'my_tree') (lambda (list e) (attr e 'MET')))", title=None)
 
 
 def test_sx_xaod(async_mock):
@@ -129,7 +142,7 @@ def test_sx_xaod_root(async_mock):
 
     q.value()
 
-    sx.get_data_rootfiles_async.assert_called_with("(call ResultTTree (call Select (call EventDataset) (lambda (list e) (attr e 'MET'))) (list 'met') 'my_tree' 'junk.root')")
+    sx.get_data_rootfiles_async.assert_called_with("(call ResultTTree (call Select (call EventDataset) (lambda (list e) (attr e 'MET'))) (list 'met') 'my_tree' 'junk.root')", title=None)
 
 
 def test_sx_xaod_awkward(async_mock):
@@ -140,7 +153,7 @@ def test_sx_xaod_awkward(async_mock):
 
     q.value()
 
-    sx.get_data_awkward_async.assert_called_with("(call ResultTTree (call Select (call EventDataset) (lambda (list e) (attr e 'MET'))) (list 'met') 'treeme' 'file.root')")
+    sx.get_data_awkward_async.assert_called_with("(call ResultTTree (call Select (call EventDataset) (lambda (list e) (attr e 'MET'))) (list 'met') 'treeme' 'file.root')", title=None)
 
 
 def test_sx_xaod_pandas(async_mock):
@@ -151,49 +164,49 @@ def test_sx_xaod_pandas(async_mock):
 
     q.value()
 
-    sx.get_data_pandas_df_async.assert_called_with("(call ResultTTree (call Select (call EventDataset) (lambda (list e) (attr e 'MET'))) (list 'met') 'treeme' 'file.root')")
+    sx.get_data_pandas_df_async.assert_called_with("(call ResultTTree (call Select (call EventDataset) (lambda (list e) (attr e 'MET'))) (list 'met') 'treeme' 'file.root')", title=None)
 
 
 def test_ctor_xaod(mocker):
     call = mocker.MagicMock(return_value=mocker.MagicMock(spec=ServiceXDataset))
     mocker.patch('func_adl_servicex.ServiceX.ServiceXDataset', call)
     ServiceXSourceXAOD('did_1221')
-    call.assert_called_with('did_1221', backend_type='xaod')
+    call.assert_called_with('did_1221', backend_name='xaod')
 
 
 def test_ctor_xaod_alternate_backend(mocker):
     call = mocker.MagicMock(return_value=mocker.MagicMock(spec=ServiceXDataset))
     mocker.patch('func_adl_servicex.ServiceX.ServiceXDataset', call)
     ServiceXSourceXAOD('did_1221', backend='myleftfoot')
-    call.assert_called_with('did_1221', backend_type='myleftfoot')
+    call.assert_called_with('did_1221', backend_name='myleftfoot')
 
 
 def test_ctor_cms(mocker):
     call = mocker.MagicMock(return_value=mocker.MagicMock(spec=ServiceXDataset))
     mocker.patch('func_adl_servicex.ServiceX.ServiceXDataset', call)
     ServiceXSourceCMSRun1AOD('did_1221')
-    call.assert_called_with('did_1221', backend_type='cms_run1_aod')
+    call.assert_called_with('did_1221', backend_name='cms_run1_aod')
 
 
 def test_ctor_cms_alternate_backend(mocker):
     call = mocker.MagicMock(return_value=mocker.MagicMock(spec=ServiceXDataset))
     mocker.patch('func_adl_servicex.ServiceX.ServiceXDataset', call)
     ServiceXSourceCMSRun1AOD('did_1221', backend='fork')
-    call.assert_called_with('did_1221', backend_type='fork')
+    call.assert_called_with('did_1221', backend_name='fork')
 
 
 def test_ctor_uproot(mocker):
     call = mocker.MagicMock(return_value=mocker.MagicMock(spec=ServiceXDataset))
     mocker.patch('func_adl_servicex.ServiceX.ServiceXDataset', call)
     ServiceXSourceUpROOT('did_1221', 'a_tree')
-    call.assert_called_with('did_1221', backend_type='uproot')
+    call.assert_called_with('did_1221', backend_name='uproot')
 
 
 def test_ctor_uproot_alternate_backend(mocker):
     call = mocker.MagicMock(return_value=mocker.MagicMock(spec=ServiceXDataset))
     mocker.patch('func_adl_servicex.ServiceX.ServiceXDataset', call)
     ServiceXSourceUpROOT('did_1221', 'a_tree', backend='myleftfoot')
-    call.assert_called_with('did_1221', backend_type='myleftfoot')
+    call.assert_called_with('did_1221', backend_name='myleftfoot')
 
 
 def test_bad_wrong_call_name_right_args(async_mock):
