@@ -183,7 +183,9 @@ class ServiceXSourceUpROOT(ServiceXDatasetSourceBase):
 
         super().__init__(ds)
 
-        # Modify the argument list in EventDataSset to include the tree name.
+        # Modify the argument list in EventDataSset to include a dummy filename and
+        # tree name
+        self.query_ast.args.append(ast.Str(s='bogus.root'))  # type: ignore
         self.query_ast.args.append(ast.Str(s=treename))  # type: ignore
 
     def check_data_format_request(self, f_name: str):

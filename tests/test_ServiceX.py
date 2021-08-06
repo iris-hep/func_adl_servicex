@@ -40,9 +40,9 @@ def test_sx_uproot(async_mock):
     ds = ServiceXSourceUpROOT(sx, 'my_tree')
     a = ds.value(executor=do_exe)
     if sys.version_info < (3, 8):
-        assert ast.dump(a) == "Call(func=Name(id='EventDataset', ctx=Load()), args=[Str(s='my_tree')], keywords=[])"
+        assert ast.dump(a) == "Call(func=Name(id='EventDataset', ctx=Load()), args=[Str(s='bogus.root'), Str(s='my_tree')], keywords=[])"
     else:
-        assert ast.dump(a) == "Call(func=Name(id='EventDataset', ctx=Load()), args=[Constant(value='my_tree')], keywords=[])"
+        assert ast.dump(a) == "Call(func=Name(id='EventDataset', ctx=Load()), args=[Constant(value='bogus.root'), Constant(value='my_tree')], keywords=[])"
 
 
 def test_sx_uproot_root(async_mock):
@@ -65,7 +65,7 @@ def test_sx_uproot_parquet(async_mock):
 
     q.value()
 
-    sx.get_data_parquet_async.assert_called_with("(Select (call EventDataset 'my_tree') (lambda (list e) (attr e 'MET')))", title=None)
+    sx.get_data_parquet_async.assert_called_with("(Select (call EventDataset 'bogus.root' 'my_tree') (lambda (list e) (attr e 'MET')))", title=None)
 
 
 def test_sx_uproot_parquet_title(async_mock):
@@ -76,7 +76,7 @@ def test_sx_uproot_parquet_title(async_mock):
 
     q.value(title="no way")
 
-    sx.get_data_parquet_async.assert_called_with("(Select (call EventDataset 'my_tree') (lambda (list e) (attr e 'MET')))", title="no way")
+    sx.get_data_parquet_async.assert_called_with("(Select (call EventDataset 'bogus.root' 'my_tree') (lambda (list e) (attr e 'MET')))", title="no way")
 
 
 def test_sx_uproot_parquet_qastle(async_mock):
@@ -88,7 +88,7 @@ def test_sx_uproot_parquet_qastle(async_mock):
 
     result = q.value()
 
-    assert result == "(Select (call EventDataset 'my_tree') (lambda (list e) (attr e 'MET')))"
+    assert result == "(Select (call EventDataset 'bogus.root' 'my_tree') (lambda (list e) (attr e 'MET')))"
     sx.get_data_parquet_async.assert_not_called()
 
 
@@ -100,7 +100,7 @@ def test_sx_uproot_awkward(async_mock):
 
     q.value()
 
-    sx.get_data_awkward_async.assert_called_with("(Select (call EventDataset 'my_tree') (lambda (list e) (attr e 'MET')))", title=None)
+    sx.get_data_awkward_async.assert_called_with("(Select (call EventDataset 'bogus.root' 'my_tree') (lambda (list e) (attr e 'MET')))", title=None)
 
 
 def test_sx_uproot_pandas(async_mock):
@@ -111,7 +111,7 @@ def test_sx_uproot_pandas(async_mock):
 
     q.value()
 
-    sx.get_data_pandas_df_async.assert_called_with("(Select (call EventDataset 'my_tree') (lambda (list e) (attr e 'MET')))", title=None)
+    sx.get_data_pandas_df_async.assert_called_with("(Select (call EventDataset 'bogus.root' 'my_tree') (lambda (list e) (attr e 'MET')))", title=None)
 
 
 def test_sx_xaod(async_mock):
