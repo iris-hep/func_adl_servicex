@@ -120,7 +120,7 @@ def test_sx_xaod(async_mock):
     ds = ServiceXSourceXAOD(sx)
     a = ds.value(executor=do_exe)
     if sys.version_info < (3, 8):
-        assert ast.dump(a) == "Call(func=Name(id='EventDataset', ctx=Load()), args=[Str(value='bogus.root')], keywords=[])"
+        assert ast.dump(a) == "Call(func=Name(id='EventDataset', ctx=Load()), args=[Str(s='bogus.root')], keywords=[])"
     else:
         assert ast.dump(a) == "Call(func=Name(id='EventDataset', ctx=Load()), args=[Constant(value='bogus.root')], keywords=[])"
 
