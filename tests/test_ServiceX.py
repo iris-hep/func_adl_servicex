@@ -119,7 +119,10 @@ def test_sx_xaod(async_mock):
     sx = async_mock(spec=ServiceXDataset)
     ds = ServiceXSourceXAOD(sx)
     a = ds.value(executor=do_exe)
-    assert ast.dump(a) == "Call(func=Name(id='EventDataset', ctx=Load()), args=[], keywords=[])"
+    if sys.version_info < (3, 8):
+        assert ast.dump(a) == "Call(func=Name(id='EventDataset', ctx=Load()), args=[Str(s='bogus.root')], keywords=[])"
+    else:
+        assert ast.dump(a) == "Call(func=Name(id='EventDataset', ctx=Load()), args=[Constant(value='bogus.root')], keywords=[])"
 
 
 def test_sx_xaod_parquet(async_mock):
@@ -142,7 +145,7 @@ def test_sx_xaod_root(async_mock):
 
     q.value()
 
-    sx.get_data_rootfiles_async.assert_called_with("(call ResultTTree (call Select (call EventDataset) (lambda (list e) (attr e 'MET'))) (list 'met') 'my_tree' 'junk.root')", title=None)
+    sx.get_data_rootfiles_async.assert_called_with("(call ResultTTree (call Select (call EventDataset 'bogus.root') (lambda (list e) (attr e 'MET'))) (list 'met') 'my_tree' 'junk.root')", title=None)
 
 
 def test_sx_xaod_awkward(async_mock):
@@ -153,7 +156,7 @@ def test_sx_xaod_awkward(async_mock):
 
     q.value()
 
-    sx.get_data_awkward_async.assert_called_with("(call ResultTTree (call Select (call EventDataset) (lambda (list e) (attr e 'MET'))) (list 'met') 'treeme' 'file.root')", title=None)
+    sx.get_data_awkward_async.assert_called_with("(call ResultTTree (call Select (call EventDataset 'bogus.root') (lambda (list e) (attr e 'MET'))) (list 'met') 'treeme' 'file.root')", title=None)
 
 
 def test_sx_xaod_pandas(async_mock):
@@ -164,7 +167,7 @@ def test_sx_xaod_pandas(async_mock):
 
     q.value()
 
-    sx.get_data_pandas_df_async.assert_called_with("(call ResultTTree (call Select (call EventDataset) (lambda (list e) (attr e 'MET'))) (list 'met') 'treeme' 'file.root')", title=None)
+    sx.get_data_pandas_df_async.assert_called_with("(call ResultTTree (call Select (call EventDataset 'bogus.root') (lambda (list e) (attr e 'MET'))) (list 'met') 'treeme' 'file.root')", title=None)
 
 
 def test_ctor_xaod(mocker):

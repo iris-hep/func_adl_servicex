@@ -123,6 +123,9 @@ class ServiceXSourceCPPBase(ServiceXDatasetSourceBase):
 
         super().__init__(ds)
 
+        # Add the filename
+        self.query_ast.args.append(ast.Str(s='bogus.root'))  # type: ignore
+
     def check_data_format_request(self, f_name: str):
         '''Check to make sure things we are asking for here are ok. We really can't deal with Parquet files. Other than
         that we are a go!
