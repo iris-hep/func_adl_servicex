@@ -48,6 +48,7 @@ def test_sx_uproot(async_mock):
 def test_sx_uproot_root(async_mock):
     'Test a request for parquet files from an xAOD guy bombs'
     sx = async_mock(spec=ServiceXDataset)
+    sx.first_supported_datatype.return_value = None
     ds = ServiceXSourceUpROOT(sx, 'my_tree')
     q = ds.Select("lambda e: e.MET").AsROOTTTree('junk.parquet', 'another_tree', ['met'])
 
@@ -60,58 +61,63 @@ def test_sx_uproot_root(async_mock):
 def test_sx_uproot_parquet(async_mock):
     'Test a request for parquet files from an xAOD guy bombs'
     sx = async_mock(spec=ServiceXDataset)
+    sx.first_supported_datatype.return_value = 'parquet'
     ds = ServiceXSourceUpROOT(sx, 'my_tree')
     q = ds.Select("lambda e: e.MET").AsParquetFiles('junk.parquet', ['met'])
 
     q.value()
 
-    sx.get_data_parquet_async.assert_called_with("(Select (call EventDataset 'bogus.root' 'my_tree') (lambda (list e) (attr e 'MET')))", title=None)
+    sx.get_data_parquet_async.assert_called_with("(call ResultParquet (call Select (call EventDataset 'bogus.root' 'my_tree') (lambda (list e) (attr e 'MET'))) (list 'met') 'junk.parquet')", title=None)
 
 
 def test_sx_uproot_parquet_title(async_mock):
     'Test a request for parquet files from an xAOD guy bombs'
     sx = async_mock(spec=ServiceXDataset)
+    sx.first_supported_datatype.return_value = 'parquet'
     ds = ServiceXSourceUpROOT(sx, 'my_tree')
     q = ds.Select("lambda e: e.MET").AsParquetFiles('junk.parquet', ['met'])
 
     q.value(title="no way")
 
-    sx.get_data_parquet_async.assert_called_with("(Select (call EventDataset 'bogus.root' 'my_tree') (lambda (list e) (attr e 'MET')))", title="no way")
+    sx.get_data_parquet_async.assert_called_with("(call ResultParquet (call Select (call EventDataset 'bogus.root' 'my_tree') (lambda (list e) (attr e 'MET'))) (list 'met') 'junk.parquet')", title="no way")
 
 
 def test_sx_uproot_parquet_qastle(async_mock):
     'Test a request for parquet files from an xAOD guy bombs'
     sx = async_mock(spec=ServiceXDataset)
+    sx.first_supported_datatype.return_value = 'parquet'
     ds = ServiceXSourceUpROOT(sx, 'my_tree')
     ds.return_qastle = True
     q = ds.Select("lambda e: e.MET").AsParquetFiles('junk.parquet', ['met'])
 
     result = q.value()
 
-    assert result == "(Select (call EventDataset 'bogus.root' 'my_tree') (lambda (list e) (attr e 'MET')))"
+    assert result == "(call ResultParquet (call Select (call EventDataset 'bogus.root' 'my_tree') (lambda (list e) (attr e 'MET'))) (list 'met') 'junk.parquet')"
     sx.get_data_parquet_async.assert_not_called()
 
 
 def test_sx_uproot_awkward(async_mock):
     'Test a request for awkward data from an xAOD guy bombs'
     sx = async_mock(spec=ServiceXDataset)
+    sx.first_supported_datatype.return_value = 'parquet'
     ds = ServiceXSourceUpROOT(sx, 'my_tree')
     q = ds.Select("lambda e: e.MET").AsAwkwardArray(['met'])
 
     q.value()
 
-    sx.get_data_awkward_async.assert_called_with("(Select (call EventDataset 'bogus.root' 'my_tree') (lambda (list e) (attr e 'MET')))", title=None)
+    sx.get_data_awkward_async.assert_called_with("(call ResultParquet (call Select (call EventDataset 'bogus.root' 'my_tree') (lambda (list e) (attr e 'MET'))) (list 'met') 'junk.parquet')", title=None)
 
 
 def test_sx_uproot_pandas(async_mock):
     'Test a request for awkward data from an xAOD guy bombs'
     sx = async_mock(spec=ServiceXDataset)
+    sx.first_supported_datatype.return_value = 'parquet'
     ds = ServiceXSourceUpROOT(sx, 'my_tree')
     q = ds.Select("lambda e: e.MET").AsPandasDF(['met'])
 
     q.value()
 
-    sx.get_data_pandas_df_async.assert_called_with("(Select (call EventDataset 'bogus.root' 'my_tree') (lambda (list e) (attr e 'MET')))", title=None)
+    sx.get_data_pandas_df_async.assert_called_with("(call ResultParquet (call Select (call EventDataset 'bogus.root' 'my_tree') (lambda (list e) (attr e 'MET'))) (list 'met') 'junk.parquet')", title=None)
 
 
 def test_sx_xaod(async_mock):
@@ -128,6 +134,7 @@ def test_sx_xaod(async_mock):
 def test_sx_xaod_parquet(async_mock):
     'Test a request for parquet files from an xAOD guy bombs'
     sx = async_mock(spec=ServiceXDataset)
+    sx.first_supported_datatype.return_value = None
     ds = ServiceXSourceXAOD(sx)
     q = ds.Select("lambda e: e.MET").AsParquetFiles('junk.parquet', ['met'])
 
@@ -151,23 +158,25 @@ def test_sx_xaod_root(async_mock):
 def test_sx_xaod_awkward(async_mock):
     'Test a request for awkward arrays from an xAOD backend'
     sx = async_mock(spec=ServiceXDataset)
+    sx.first_supported_datatype.return_value = 'root'
     ds = ServiceXSourceXAOD(sx)
     q = ds.Select("lambda e: e.MET").AsAwkwardArray(['met'])
 
     q.value()
 
-    sx.get_data_awkward_async.assert_called_with("(call ResultTTree (call Select (call EventDataset 'bogus.root') (lambda (list e) (attr e 'MET'))) (list 'met') 'treeme' 'file.root')", title=None)
+    sx.get_data_awkward_async.assert_called_with("(call ResultTTree (call Select (call EventDataset 'bogus.root') (lambda (list e) (attr e 'MET'))) (list 'met') 'treeme' 'junk.root')", title=None)
 
 
 def test_sx_xaod_pandas(async_mock):
     'Test a request for awkward arrays from an xAOD backend'
     sx = async_mock(spec=ServiceXDataset)
+    sx.first_supported_datatype.return_value = 'root'
     ds = ServiceXSourceXAOD(sx)
     q = ds.Select("lambda e: e.MET").AsPandasDF(['met'])
 
     q.value()
 
-    sx.get_data_pandas_df_async.assert_called_with("(call ResultTTree (call Select (call EventDataset 'bogus.root') (lambda (list e) (attr e 'MET'))) (list 'met') 'treeme' 'file.root')", title=None)
+    sx.get_data_pandas_df_async.assert_called_with("(call ResultTTree (call Select (call EventDataset 'bogus.root') (lambda (list e) (attr e 'MET'))) (list 'met') 'treeme' 'junk.root')", title=None)
 
 
 def test_ctor_xaod(mocker):
@@ -208,7 +217,7 @@ def test_ctor_uproot(mocker):
 def test_ctor_uproot_alternate_backend(mocker):
     call = mocker.MagicMock(return_value=mocker.MagicMock(spec=ServiceXDataset))
     mocker.patch('func_adl_servicex.ServiceX.ServiceXDataset', call)
-    ServiceXSourceUpROOT('did_1221', 'a_tree', backend='myleftfoot')
+    ServiceXSourceUpROOT('did_1221', 'a_tree', backend_name='myleftfoot')
     call.assert_called_with('did_1221', backend_name='myleftfoot')
 
 
