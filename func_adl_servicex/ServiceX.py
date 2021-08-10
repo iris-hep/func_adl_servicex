@@ -91,13 +91,13 @@ class ServiceXDatasetSourceBase (EventDataset, ABC):
         q_str = self.generate_qastle(a)
         logging.getLogger(__name__).debug(f'Qastle string sent to servicex: {q_str}')
 
-        # Find the function we need to run against.
-        if a_func.id not in self._ds_map:
-            raise FuncADLServerException(f'Internal error - asked for {a_func.id} - but this dataset does not support it.')
-
         # If only qastle is wanted, return here.
         if self.return_qastle:
             return q_str
+
+        # Find the function we need to run against.
+        if a_func.id not in self._ds_map:
+            raise FuncADLServerException(f'Internal error - asked for {a_func.id} - but this dataset does not support it.')
 
         # Next, run it, depending on the function
         name = self._ds_map[a_func.id]
@@ -199,7 +199,7 @@ class ServiceXSourceUpROOT(ServiceXDatasetSourceBase):
             f_name (str): The function name we should check
         '''
         if f_name == 'ResultTTree':
-            raise FuncADLServerException('The AsROOTTTrees datatype is not supported by the xAOD backend. Please use AsParquetFiles, AsAwkward, or AsPandas')
+            raise FuncADLServerException('The AsROOTTTrees datatype is not supported by the uproot backend. Please use AsParquetFiles, AsAwkward, or AsPandas')
 
     def generate_qastle(self, a: ast.Call) -> str:
         '''Genrate the `qastle` for a query to the uproot backend
