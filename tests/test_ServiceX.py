@@ -59,7 +59,7 @@ def test_sx_uproot_root(async_mock):
 
 
 def test_sx_uproot_parquet(async_mock):
-    'Test a request for parquet files from an xAOD guy bombs'
+    'Test a request for parquet files as parquet files works'
     sx = async_mock(spec=ServiceXDataset)
     sx.first_supported_datatype.return_value = 'parquet'
     ds = ServiceXSourceUpROOT(sx, 'my_tree')
@@ -68,6 +68,24 @@ def test_sx_uproot_parquet(async_mock):
     q.value()
 
     sx.get_data_parquet_async.assert_called_with("(call ResultParquet (call Select (call EventDataset 'bogus.root' 'my_tree') (lambda (list e) (attr e 'MET'))) (list 'met') 'junk.parquet')", title=None)
+
+
+def test_sx_uproot_default(async_mock):
+    'Test a request for data as dict with no explicit output returns parquet files'
+    sx = async_mock(spec=ServiceXDataset)
+    sx.first_supported_datatype.return_value = 'parquet'
+    ds = ServiceXSourceUpROOT(sx, 'my_tree')
+    q = (
+        ds
+        .Select(lambda e: e.MET)
+        .Select(lambda met: {
+            'met': met,
+        })
+    )
+
+    q.value()
+
+    sx.get_data_parquet_async.assert_called_with("(call Select (call Select (call EventDataset 'bogus.root' 'my_tree') (lambda (list e) (attr e 'MET'))) (lambda (list met) (dict (list 'met') (list met))))", title=None)
 
 
 def test_sx_uproot_parquet_title(async_mock):

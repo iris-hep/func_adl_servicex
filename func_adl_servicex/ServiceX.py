@@ -154,14 +154,17 @@ class ServiceXDatasetSourceBase (EventDataset, ABC):
             return q_str
 
         # Find the function we need to run against.
-        if a_func.id not in self._ds_map:
-            raise FuncADLServerException(f'Internal error - asked for {a_func.id} - but this dataset does not support it.')
+        if a_func.id in self._ds_map:
+            name = self._ds_map[a_func.id]
+        else:
+            data_type = self._ds.first_supported_datatype(['parquet', 'root'])
+            if data_type is not None and data_type in self._format_map:
+                name = self._format_map[data_type]
+            else:
+                raise FuncADLServerException(f'Internal error - asked for {a_func.id} - but this dataset does not support it.')
 
-        # Next, run it, depending on the function
-        name = self._ds_map[a_func.id]
+        # Run ghe query for real!
         attr = getattr(self._ds, name)
-
-        # Run it!
         return await attr(q_str, title=title)
 
 
