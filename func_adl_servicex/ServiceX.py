@@ -111,8 +111,6 @@ class ServiceXDatasetSourceBase (EventDataset, ABC):
             assert default_format is not None, 'Unsupported ServiceX returned format'
             method_to_call = self._format_map[default_format]
 
-            if len(a.args) != 2:
-                raise FuncADLServerException(f'Do not understand how to call {cast(ast.Name, a.func).id} - wrong number of arguments')
             stream = a.args[0]
             col_names = a.args[1]
             if method_to_call == 'get_data_rootfiles_async':
@@ -123,7 +121,8 @@ class ServiceXDatasetSourceBase (EventDataset, ABC):
                 source = ast.Call(
                     func=ast.Name(id='ResultParquet', ctx=ast.Load()),
                     args=[stream, col_names, ast.Str('junk.parquet')])
-            else:
+            else:  # pragma: no cover
+                # This indicates a programming error
                 assert False, f'Do not know how to call {method_to_call}'
 
         return python_ast_to_text_ast(source)
