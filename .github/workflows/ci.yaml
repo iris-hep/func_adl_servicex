@@ -5,7 +5,7 @@ on:
   pull_request:
   # Run daily at 0:01 UTC
   schedule:
-  - cron:  '1 0 * * *'
+  - cron:  '1 0 * * 0'
 
 jobs:
   flake8:
