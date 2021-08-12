@@ -28,7 +28,7 @@ setup(name="func_adl_servicex",
       license="TBD",
       test_suite="tests",
       install_requires=[
-          "func_adl>=2.3b2, <3.0",
+          "func_adl>=2.4, <3.0",
           "qastle>=0.10, <1.0",
           "servicex>=2.4a4, <3.0a1"
       ],
