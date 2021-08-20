@@ -118,9 +118,11 @@ class ServiceXDatasetSourceBase (EventDataset, ABC):
                     func=ast.Name(id='ResultTTree', ctx=ast.Load()),
                     args=[stream, col_names, ast.Str('treeme'), ast.Str('junk.root')])
             elif method_to_call == 'get_data_parquet_async':
-                source = ast.Call(
-                    func=ast.Name(id='ResultParquet', ctx=ast.Load()),
-                    args=[stream, col_names, ast.Str('junk.parquet')])
+                source = stream
+                # See #32 for why this is commented out
+                # source = ast.Call(
+                #     func=ast.Name(id='ResultParquet', ctx=ast.Load()),
+                #     args=[stream, col_names, ast.Str('junk.parquet')])
             else:  # pragma: no cover
                 # This indicates a programming error
                 assert False, f'Do not know how to call {method_to_call}'
