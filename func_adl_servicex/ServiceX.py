@@ -3,7 +3,7 @@ import ast
 import logging
 from abc import ABC
 from collections import Iterable
-from typing import Any, Optional, Union, cast
+from typing import Any, Optional, TypeVar, Union, cast
 
 from func_adl import EventDataset
 from qastle import python_ast_to_text_ast
@@ -17,7 +17,10 @@ class FuncADLServerException (Exception):
         Exception.__init__(self, msg)
 
 
-class ServiceXDatasetSourceBase (EventDataset, ABC):
+T = TypeVar('T')
+
+
+class ServiceXDatasetSourceBase (EventDataset[T], ABC):
     '''
     Base class for a ServiceX backend dataset.
 
@@ -169,7 +172,7 @@ class ServiceXDatasetSourceBase (EventDataset, ABC):
         return await attr(q_str, title=title)
 
 
-class ServiceXSourceCPPBase(ServiceXDatasetSourceBase):
+class ServiceXSourceCPPBase(ServiceXDatasetSourceBase[T]):
     def __init__(self, sx: Union[ServiceXDataset, DatasetType], backend_name: str):
         '''Create a C++ backend data set source
 
@@ -183,7 +186,7 @@ class ServiceXSourceCPPBase(ServiceXDatasetSourceBase):
         self.query_ast.args.append(ast.Str(s='bogus.root'))  # type: ignore
 
 
-class ServiceXSourceXAOD(ServiceXSourceCPPBase):
+class ServiceXSourceXAOD(ServiceXSourceCPPBase[T]):
     def __init__(self, sx: Union[ServiceXDataset, DatasetType], backend='xaod'):
         '''
         Create a servicex dataset sequence from a servicex dataset
@@ -191,7 +194,7 @@ class ServiceXSourceXAOD(ServiceXSourceCPPBase):
         super().__init__(sx, backend)
 
 
-class ServiceXSourceCMSRun1AOD(ServiceXSourceCPPBase):
+class ServiceXSourceCMSRun1AOD(ServiceXSourceCPPBase[T]):
     def __init__(self, sx: Union[ServiceXDataset, DatasetType], backend='cms_run1_aod'):
         '''
         Create a servicex dataset sequence from a servicex dataset
@@ -199,7 +202,7 @@ class ServiceXSourceCMSRun1AOD(ServiceXSourceCPPBase):
         super().__init__(sx, backend)
 
 
-class ServiceXSourceUpROOT(ServiceXDatasetSourceBase):
+class ServiceXSourceUpROOT(ServiceXDatasetSourceBase[T]):
     def __init__(self, sx: Union[ServiceXDataset, DatasetType], treename: str, backend_name='uproot'):
         '''
         Create a servicex dataset sequence from a servicex dataset
