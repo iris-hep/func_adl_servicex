@@ -186,8 +186,8 @@ class SXLocalxAOD(SXLocalCPP):
 
     @classmethod
     def _get_backend_type(cls) -> str:
-        'Return code for a cms_run1_aod backend'
-        return 'cms_run1_aod'
+        'Return code for a xaod backend'
+        return 'xaod'
 
     def __init__(self, files: Union[str, List[str], Path, List[Path]],
                  docker_image: Optional[str] = None,
@@ -224,8 +224,8 @@ class SXLocalCMSRun1AOD(SXLocalCPP):
 
     @classmethod
     def _get_backend_type(cls) -> str:
-        'Return code for a xaod backend'
-        return 'xaod'
+        'Return code for a cms_run1_aod backend'
+        return 'cms_run1_aod'
 
     def __init__(self, files: Union[str, List[str], Path, List[Path]],
                  docker_image: Optional[str] = None,
