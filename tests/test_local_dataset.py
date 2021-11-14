@@ -3,11 +3,9 @@ import tempfile
 from pathlib import Path
 
 import pytest
-from func_adl_servicex import SXLocalxAOD
+from func_adl_servicex import SXLocalxAOD, SXLocalCMSRun1AOD
 from func_adl_xAOD.atlas.xaod import xAODDataset
 from servicex import ignore_cache
-
-from func_adl_servicex.local_dataset import SXLocalCMSRun1AOD
 
 
 @pytest.fixture()

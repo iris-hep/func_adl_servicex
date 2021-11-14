@@ -3,6 +3,7 @@
         "aiohttp",
         "asyncio",
         "AZNLOCTEQ",
+        "cernopendata",
         "codecov",
         "DAOD",
         "getenv",
