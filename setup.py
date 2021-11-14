@@ -47,6 +47,9 @@ setup(name="func_adl_servicex",
               'wheel',
               'asyncmock'
           ],
+          'local': [
+              'func_adl_xAOD[local]',
+          ],
       },
       classifiers=[
           # "Development Status :: 3 - Alpha",
