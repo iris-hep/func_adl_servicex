@@ -1,9 +1,12 @@
+from abc import ABC, abstractmethod
 import uuid
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple, Union
 
 import aiohttp
 from func_adl_xAOD.atlas.xaod import xAODDataset
+from func_adl_xAOD.cms.aod import CMSRun1AODDataset
+from func_adl_xAOD.common.local_dataset import LocalDataset
 from qastle import text_ast_to_python_ast
 from servicex import ServiceXDataset
 
@@ -58,7 +61,7 @@ class _sx_local_file_minio_factory:
 
 
 class _sx_local_file_adaptor:
-    def __init__(self, ds: xAODDataset, minio: _sx_local_file_minio_factory):
+    def __init__(self, ds: LocalDataset, minio: _sx_local_file_minio_factory):
         '''Create a ServiceXAdaptor that will run the local file accessor.
         '''
         self._ds = ds
@@ -114,7 +117,78 @@ class _sx_local_file_adaptor:
         return (0, 1, 0)
 
 
-class SXLocalxAOD(ServiceXSourceCPPBase):
+class SXLocalCPP(ServiceXSourceCPPBase, ABC):
+    def __init__(self, files: Union[str, List[str], Path, List[Path]],
+                 docker_image: Optional[str] = None,
+                 docker_tag: Optional[str] = None):
+        '''A local ServiceX-like dataset. Used for the C++ backends
+
+        NOTE: This version of is not suitable for running large numbers of files or
+        datasets simultantiously on your local machine! Everything is run serially.
+
+        Args:
+            files (Union[str, List[str], Path, List[Path]]): List of files to run on.
+        '''
+
+        # Create the local dataset
+        ds = self._create_dataset(files, docker_image, docker_tag)
+
+        # To create the ServiceXDataset
+        minio_local = _sx_local_file_minio_factory()
+        sx_ds = ServiceXDataset(
+            'local_dataset',
+            backend_name=self._get_backend_type(),
+            servicex_adaptor=_sx_local_file_adaptor(ds, minio_local),  # type: ignore
+            minio_adaptor=minio_local,  # type: ignore
+            status_callback_factory=None,
+        )
+
+        # And create our home body!
+        super().__init__(sx_ds, self._get_backend_type())
+
+    @classmethod
+    @abstractmethod
+    def _create_dataset(cls, files: Union[str, List[str], Path, List[Path]],
+                        docker_image: Optional[str] = None,
+                        docker_tag: Optional[str] = None) -> LocalDataset:
+        '''Create a dataset that can be used with the C++ backends
+
+        Args:
+            files (Union[str, List[str], Path, List[Path]]): List of files to run on.
+            docker_image (Optional[str]): The docker image to use.
+            docker_tag (Optional[str]): The docker tag to use.
+        '''
+
+    @classmethod
+    @abstractmethod
+    def _get_backend_type(cls) -> str:
+        'Return the backend type/name string'
+
+
+class SXLocalxAOD(SXLocalCPP):
+    @classmethod
+    def _create_dataset(cls, files: Union[str, List[str], Path, List[Path]],
+                        docker_image: Optional[str] = None,
+                        docker_tag: Optional[str] = None) -> LocalDataset:
+        '''Create a dataset that can be used with the C++ backends
+
+        Args:
+            files (Union[str, List[str], Path, List[Path]]): List of files to run on.
+            docker_image (Optional[str]): The docker image to use.
+            docker_tag (Optional[str]): The docker tag to use.
+        '''
+        extra_args = {}
+        if docker_image is not None:
+            extra_args['docker_image'] = docker_image
+        if docker_tag is not None:
+            extra_args['docker_tag'] = docker_tag
+        return xAODDataset(files, **extra_args)
+
+    @classmethod
+    def _get_backend_type(cls) -> str:
+        'Return code for a cms_run1_aod backend'
+        return 'cms_run1_aod'
+
     def __init__(self, files: Union[str, List[str], Path, List[Path]],
                  docker_image: Optional[str] = None,
                  docker_tag: Optional[str] = None):
@@ -126,24 +200,42 @@ class SXLocalxAOD(ServiceXSourceCPPBase):
         Args:
             files (Union[str, List[str], Path, List[Path]]): List of files to run on.
         '''
+        super().__init__(files, docker_image, docker_tag)
 
-        # Create the local dataset
+
+class SXLocalCMSRun1AOD(SXLocalCPP):
+    @classmethod
+    def _create_dataset(cls, files: Union[str, List[str], Path, List[Path]],
+                        docker_image: Optional[str] = None,
+                        docker_tag: Optional[str] = None) -> LocalDataset:
+        '''Create a dataset that can be used with the CMSRun1 backend
+
+        Args:
+            files (Union[str, List[str], Path, List[Path]]): List of files to run on.
+            docker_image (Optional[str]): The docker image to use.
+            docker_tag (Optional[str]): The docker tag to use.
+        '''
         extra_args = {}
         if docker_image is not None:
             extra_args['docker_image'] = docker_image
         if docker_tag is not None:
             extra_args['docker_tag'] = docker_tag
-        ds = xAODDataset(files, **extra_args)
+        return CMSRun1AODDataset(files, **extra_args)
 
-        # To create the ServiceXDataset
-        minio_local = _sx_local_file_minio_factory()
-        sx_ds = ServiceXDataset(
-            'local_dataset',
-            backend_name='xaod',
-            servicex_adaptor=_sx_local_file_adaptor(ds, minio_local),  # type: ignore
-            minio_adaptor=minio_local,  # type: ignore
-            status_callback_factory=None,
-        )
+    @classmethod
+    def _get_backend_type(cls) -> str:
+        'Return code for a xaod backend'
+        return 'xaod'
 
-        # And create our home body!
-        super().__init__(sx_ds, 'xaod')
+    def __init__(self, files: Union[str, List[str], Path, List[Path]],
+                 docker_image: Optional[str] = None,
+                 docker_tag: Optional[str] = None):
+        '''A local ServiceX-like dataset. Will run locally, in docker, synchronously.
+
+        NOTE: This version of is not suitable for running large numbers of files or
+        datasets simultantiously on your local machine! Everything is run serially.
+
+        Args:
+            files (Union[str, List[str], Path, List[Path]]): List of files to run on.
+        '''
+        super().__init__(files, docker_image, docker_tag)
