@@ -48,7 +48,7 @@ setup(name="func_adl_servicex",
               'asyncmock'
           ],
           'local': [
-              'func_adl_xAOD[local]',
+              'func_adl_xAOD[local]==1.5b4',
           ],
       },
       classifiers=[
