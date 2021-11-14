@@ -115,7 +115,9 @@ class _sx_local_file_adaptor:
 
 
 class SXLocalxAOD(ServiceXSourceCPPBase):
-    def __init__(self, files: Union[str, List[str], Path, List[Path]]):
+    def __init__(self, files: Union[str, List[str], Path, List[Path]],
+                 docker_image: Optional[str] = None,
+                 docker_tag: Optional[str] = None):
         '''A local ServiceX-like dataset. Will run locally, in docker, synchronously.
 
         NOTE: This version of is not suitable for running large numbers of files or
@@ -126,8 +128,12 @@ class SXLocalxAOD(ServiceXSourceCPPBase):
         '''
 
         # Create the local dataset
-        # TODO: docker info should be passed through
-        ds = xAODDataset(files)
+        extra_args = {}
+        if docker_image is not None:
+            extra_args['docker_image'] = docker_image
+        if docker_tag is not None:
+            extra_args['docker_tag'] = docker_tag
+        ds = xAODDataset(files, **extra_args)
 
         # To create the ServiceXDataset
         minio_local = _sx_local_file_minio_factory()

@@ -51,3 +51,13 @@ def test_good_call(xAODDataset_mock):
 
     assert len(v) == 1
     assert isinstance(v[0], Path)
+
+
+def test_docker_image_setting(xAODDataset_mock):
+    'Make sure we can set docker tag and image correctly'
+    (SXLocalxAOD('my_dataset.root', docker_image='fork/forky', docker_tag='mc_fork_face')
+     .SelectMany(lambda e: e.Jets('AntiKt4'))
+     .Select(lambda j: j.pt())
+     .value()
+     )
+    xAODDataset_mock[0].assert_called_once_with('my_dataset.root', docker_image='fork/forky', docker_tag='mc_fork_face')
