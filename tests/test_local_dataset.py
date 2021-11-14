@@ -3,8 +3,6 @@ import tempfile
 from pathlib import Path
 
 import pytest
-from func_adl_servicex import SXLocalxAOD, SXLocalCMSRun1AOD
-from func_adl_xAOD.atlas.xaod import xAODDataset
 from servicex import ignore_cache
 
 # If the CI hasn't loaded python on whales, then we aren't using docker
@@ -13,6 +11,7 @@ python_on_whales = pytest.importorskip("python_on_whales")
 
 @pytest.fixture()
 def xAODDataset_mock(mocker):
+    from func_adl_xAOD.atlas.xaod import xAODDataset
     xds = mocker.MagicMock(spec=xAODDataset)
     ctor = mocker.MagicMock(return_value=xds)
 
@@ -28,7 +27,8 @@ def xAODDataset_mock(mocker):
 
 @pytest.fixture()
 def CMSRun1AODDataset_mock(mocker):
-    xds = mocker.MagicMock(spec=xAODDataset)
+    from func_adl_xAOD.cms.aod import CMSRun1AODDataset
+    xds = mocker.MagicMock(spec=CMSRun1AODDataset)
     ctor = mocker.MagicMock(return_value=xds)
 
     mocker.patch('func_adl_servicex.local_dataset.CMSRun1AODDataset', ctor)
@@ -49,6 +49,7 @@ def ignore_cache_for_test():
 
 def test_ctor_cms(CMSRun1AODDataset_mock):
     'Make sure arguments are passed in correctly'
+    from func_adl_servicex import SXLocalCMSRun1AOD
     SXLocalCMSRun1AOD('junk.root')
 
     CMSRun1AODDataset_mock[0].assert_called_once_with('junk.root')
@@ -56,6 +57,7 @@ def test_ctor_cms(CMSRun1AODDataset_mock):
 
 def test_good_call_cms(CMSRun1AODDataset_mock):
     'Make sure the call works'
+    from func_adl_servicex import SXLocalCMSRun1AOD
     v = (SXLocalCMSRun1AOD('my_dataset.root')
          .SelectMany(lambda e: e.Jets('AntiKt4'))
          .Select(lambda j: j.pt())
@@ -73,6 +75,7 @@ def test_good_call_cms(CMSRun1AODDataset_mock):
 
 def test_docker_image_setting_cms(CMSRun1AODDataset_mock):
     'Make sure we can set docker tag and image correctly'
+    from func_adl_servicex import SXLocalCMSRun1AOD
     (SXLocalCMSRun1AOD('my_dataset.root', docker_image='fork/forky', docker_tag='mc_fork_face')
      .SelectMany(lambda e: e.Jets('AntiKt4'))
      .Select(lambda j: j.pt())
@@ -83,6 +86,7 @@ def test_docker_image_setting_cms(CMSRun1AODDataset_mock):
 
 def test_ctor_xaod(xAODDataset_mock):
     'Make sure arguments are passed in correctly'
+    from func_adl_servicex import SXLocalxAOD
     SXLocalxAOD('junk.root')
 
     xAODDataset_mock[0].assert_called_once_with('junk.root')
@@ -90,6 +94,7 @@ def test_ctor_xaod(xAODDataset_mock):
 
 def test_good_call_xaod(xAODDataset_mock):
     'Make sure the call works'
+    from func_adl_servicex import SXLocalxAOD
     v = (SXLocalxAOD('my_dataset.root')
          .SelectMany(lambda e: e.Jets('AntiKt4'))
          .Select(lambda j: j.pt())
@@ -107,6 +112,7 @@ def test_good_call_xaod(xAODDataset_mock):
 
 def test_docker_image_setting_xaod(xAODDataset_mock):
     'Make sure we can set docker tag and image correctly'
+    from func_adl_servicex import SXLocalxAOD
     (SXLocalxAOD('my_dataset.root', docker_image='fork/forky', docker_tag='mc_fork_face')
      .SelectMany(lambda e: e.Jets('AntiKt4'))
      .Select(lambda j: j.pt())
