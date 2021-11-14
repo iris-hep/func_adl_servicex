@@ -7,6 +7,9 @@ from func_adl_servicex import SXLocalxAOD, SXLocalCMSRun1AOD
 from func_adl_xAOD.atlas.xaod import xAODDataset
 from servicex import ignore_cache
 
+# If the CI hasn't loaded python on whales, then we aren't using docker
+python_on_whales = pytest.importorskip("python_on_whales")
+
 
 @pytest.fixture()
 def xAODDataset_mock(mocker):
