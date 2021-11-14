@@ -1,4 +1,5 @@
 import ast
+import sys
 import tempfile
 from pathlib import Path
 
@@ -21,7 +22,13 @@ def xAODDataset_mock(mocker):
     with tempfile.TemporaryDirectory() as tmpdir:
         analysis_file = (Path(tmpdir) / 'Analysis.root')
         analysis_file.touch()
-        xds.execute_result_async.return_value = [analysis_file]
+        if sys.version_info >= (3, 8):
+            xds.execute_result_async.return_value = [analysis_file]
+        else:
+            import asyncio
+            f = asyncio.Future()
+            f.set_result([analysis_file])
+            xds.execute_result_async.return_value = f
         yield ctor, xds
 
 
@@ -37,7 +44,13 @@ def CMSRun1AODDataset_mock(mocker):
     with tempfile.TemporaryDirectory() as tmpdir:
         analysis_file = (Path(tmpdir) / 'Analysis.root')
         analysis_file.touch()
-        xds.execute_result_async.return_value = [analysis_file]
+        if sys.version_info >= (3, 8):
+            xds.execute_result_async.return_value = [analysis_file]
+        else:
+            import asyncio
+            f = asyncio.Future()
+            f.set_result([analysis_file])
+            xds.execute_result_async.return_value = f
         yield ctor, xds
 
 
