@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 import uuid
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple, Union
+from typing import Dict, List, Optional, Tuple, TypeVar, Union
 
 import aiohttp
 from func_adl_xAOD.atlas.xaod import xAODDataset
@@ -117,7 +117,10 @@ class _sx_local_file_adaptor:
         return (0, 1, 0)
 
 
-class SXLocalCPP(ServiceXSourceCPPBase, ABC):
+T = TypeVar('T')
+
+
+class SXLocalCPP(ServiceXSourceCPPBase[T], ABC):
     def __init__(self, files: Union[str, List[str], Path, List[Path]],
                  docker_image: Optional[str] = None,
                  docker_tag: Optional[str] = None):
@@ -165,7 +168,10 @@ class SXLocalCPP(ServiceXSourceCPPBase, ABC):
         'Return the backend type/name string'
 
 
-class SXLocalxAOD(SXLocalCPP):
+U = TypeVar('U')
+
+
+class SXLocalxAOD(SXLocalCPP[U]):
     @classmethod
     def _create_dataset(cls, files: Union[str, List[str], Path, List[Path]],
                         docker_image: Optional[str] = None,
@@ -203,7 +209,10 @@ class SXLocalxAOD(SXLocalCPP):
         super().__init__(files, docker_image, docker_tag)
 
 
-class SXLocalCMSRun1AOD(SXLocalCPP):
+V = TypeVar('V')
+
+
+class SXLocalCMSRun1AOD(SXLocalCPP[V]):
     @classmethod
     def _create_dataset(cls, files: Union[str, List[str], Path, List[Path]],
                         docker_image: Optional[str] = None,
