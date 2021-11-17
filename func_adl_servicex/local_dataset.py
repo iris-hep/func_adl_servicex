@@ -85,7 +85,10 @@ class _sx_local_file_adaptor:
         # Next, run the thing, and wait for it to finish
         query = json_query['selection']
         title = json_query['title'] if 'title' in json_query else ''
-        file_list = await self._ds.execute_result_async(text_ast_to_python_ast(query), title)
+        file_list = await self._ds.execute_result_async(
+            text_ast_to_python_ast(query).body[0].value,
+            title
+        )
 
         self._minio.associate_file(request_id, file_list)
 
