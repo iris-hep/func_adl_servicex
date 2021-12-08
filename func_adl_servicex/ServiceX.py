@@ -20,7 +20,7 @@ class FuncADLServerException (Exception):
 T = TypeVar('T')
 
 
-class ServiceXDatasetSourceBase (EventDataset[T], ABC):
+class ServiceXDatasetSourceBase(EventDataset[T], ABC):
     '''
     Base class for a ServiceX backend dataset.
 
@@ -49,11 +49,11 @@ class ServiceXDatasetSourceBase (EventDataset[T], ABC):
     # prioritized order?
     _format_list = ['parquet', 'root']
 
-    def __init__(self, sx: Union[ServiceXDataset, DatasetType], backend_name: str):
+    def __init__(self, sx: Union[ServiceXDataset, DatasetType], backend_name: str, item_type: type = Any):
         '''
         Create a servicex dataset sequence from a servicex dataset
         '''
-        super().__init__()
+        super().__init__(item_type=item_type)
 
         # Get the base created
         if isinstance(sx, (str, Iterable)):
@@ -173,41 +173,41 @@ class ServiceXDatasetSourceBase (EventDataset[T], ABC):
 
 
 class ServiceXSourceCPPBase(ServiceXDatasetSourceBase[T]):
-    def __init__(self, sx: Union[ServiceXDataset, DatasetType], backend_name: str):
+    def __init__(self, sx: Union[ServiceXDataset, DatasetType], backend_name: str, item_type: type = Any):
         '''Create a C++ backend data set source
 
         Args:
             sx (Union[ServiceXDataset, str]): The ServiceX dataset or dataset source.
             backend_name (str): The backend type, `xaod`, for example, for the ATLAS R21 xaod
         '''
-        super().__init__(sx, backend_name)
+        super().__init__(sx, backend_name, item_type)
 
         # Add the filename
         self.query_ast.args.append(ast.Str(s='bogus.root'))  # type: ignore
 
 
 class ServiceXSourceXAOD(ServiceXSourceCPPBase[T]):
-    def __init__(self, sx: Union[ServiceXDataset, DatasetType], backend='xaod'):
+    def __init__(self, sx: Union[ServiceXDataset, DatasetType], backend='xaod', item_type: type = Any):
         '''
         Create a servicex dataset sequence from a servicex dataset
         '''
-        super().__init__(sx, backend)
+        super().__init__(sx, backend, item_type)
 
 
 class ServiceXSourceCMSRun1AOD(ServiceXSourceCPPBase[T]):
-    def __init__(self, sx: Union[ServiceXDataset, DatasetType], backend='cms_run1_aod'):
+    def __init__(self, sx: Union[ServiceXDataset, DatasetType], backend='cms_run1_aod', item_type: type = Any):
         '''
         Create a servicex dataset sequence from a servicex dataset
         '''
-        super().__init__(sx, backend)
+        super().__init__(sx, backend, item_type)
 
 
 class ServiceXSourceUpROOT(ServiceXDatasetSourceBase[T]):
-    def __init__(self, sx: Union[ServiceXDataset, DatasetType], treename: str, backend_name='uproot'):
+    def __init__(self, sx: Union[ServiceXDataset, DatasetType], treename: str, backend_name='uproot', item_type: type = Any):
         '''
         Create a servicex dataset sequence from a servicex dataset
         '''
-        super().__init__(sx, backend_name)
+        super().__init__(sx, backend_name, item_type)
 
         # Modify the argument list in EventDataSset to include a dummy filename and
         # tree name
