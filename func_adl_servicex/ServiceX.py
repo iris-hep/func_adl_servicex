@@ -3,7 +3,7 @@ import ast
 import logging
 from abc import ABC
 from collections import Iterable
-from typing import Any, Optional, TypeVar, Union, cast
+from typing import Any, List, Optional, TypeVar, Union, cast
 
 from func_adl import EventDataset
 from qastle import python_ast_to_text_ast
@@ -117,9 +117,15 @@ class ServiceXDatasetSourceBase(EventDataset[T], ABC):
             stream = a.args[0]
             col_names = a.args[1]
             if method_to_call == 'get_data_rootfiles_async':
-                source = ast.Call(
-                    func=ast.Name(id='ResultTTree', ctx=ast.Load()),
-                    args=[stream, col_names, ast.Str('treeme'), ast.Str('junk.root')])
+                # If we have no column names, then we must be using a dictionary to set them - so just pass that
+                # directly.
+                assert isinstance(col_names, ast.List)
+                if len(col_names.elts) == 0:
+                    source = stream
+                else:
+                    source = ast.Call(
+                        func=ast.Name(id='ResultTTree', ctx=ast.Load()),
+                        args=[stream, col_names, ast.Str('treeme'), ast.Str('junk.root')])
             elif method_to_call == 'get_data_parquet_async':
                 source = stream
                 # See #32 for why this is commented out
