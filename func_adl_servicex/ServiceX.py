@@ -2,7 +2,7 @@
 import ast
 import logging
 from abc import ABC
-from collections import Iterable
+from collections.abc import Iterable
 from typing import Any, Optional, Union, cast
 
 from func_adl import EventDataset
