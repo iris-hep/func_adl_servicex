@@ -2,8 +2,8 @@
 import ast
 import logging
 from abc import ABC
-from collections import Iterable
-from typing import Any, List, Optional, TypeVar, Union, cast
+from collections.abc import Iterable
+from typing import Any, Optional, TypeVar, Union, cast
 
 from func_adl import EventDataset
 from qastle import python_ast_to_text_ast
@@ -119,8 +119,8 @@ class ServiceXDatasetSourceBase(EventDataset[T], ABC):
             if method_to_call == 'get_data_rootfiles_async':
                 # If we have no column names, then we must be using a dictionary to set them - so just pass that
                 # directly.
-                assert isinstance(col_names, ast.List)
-                if len(col_names.elts) == 0:
+                assert isinstance(col_names, (ast.List, ast.Constant)), f'Programming error - type name not known {type(col_names).__name__}'
+                if isinstance(col_names, ast.List) and len(col_names.elts) == 0:
                     source = stream
                 else:
                     source = ast.Call(

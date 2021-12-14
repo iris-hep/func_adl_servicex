@@ -185,6 +185,30 @@ def test_sx_xaod_awkward(async_mock):
     sx.get_data_awkward_async.assert_called_with("(call ResultTTree (call Select (call EventDataset 'bogus.root') (lambda (list e) (attr e 'MET'))) (list 'met') 'treeme' 'junk.root')", title=None)
 
 
+def test_sx_xaod_awkward_single_column(async_mock):
+    'Test a request for awkward arrays from an xAOD backend, as column name'
+    sx = async_mock(spec=ServiceXDataset)
+    sx.first_supported_datatype.return_value = 'root'
+    ds = ServiceXSourceXAOD(sx)
+    q = ds.Select("lambda e: e.MET").AsAwkwardArray('met')
+
+    q.value()
+
+    sx.get_data_awkward_async.assert_called_with("(call ResultTTree (call Select (call EventDataset 'bogus.root') (lambda (list e) (attr e 'MET'))) 'met' 'treeme' 'junk.root')", title=None)
+
+
+def test_sx_xaod_awkward_single_dict(async_mock):
+    'Test a request for awkward arrays from an xAOD backend, as dict labelting'
+    sx = async_mock(spec=ServiceXDataset)
+    sx.first_supported_datatype.return_value = 'root'
+    ds = ServiceXSourceXAOD(sx)
+    q = ds.Select("lambda e: {'met': e.MET}").AsAwkwardArray()
+
+    q.value()
+
+    sx.get_data_awkward_async.assert_called_with("(call Select (call EventDataset 'bogus.root') (lambda (list e) (dict (list 'met') (list (attr e 'MET')))))", title=None)
+
+
 def test_sx_xaod_awkward_no_columns(async_mock):
     'Test a request for awkward arrays from an xAOD backend'
     sx = async_mock(spec=ServiceXDataset)
