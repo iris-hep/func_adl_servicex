@@ -9,6 +9,7 @@ from func_adl_xAOD.cms.aod import CMSRun1AODDataset
 from func_adl_xAOD.common.local_dataset import LocalDataset
 from qastle import text_ast_to_python_ast
 from servicex import ServiceXDataset
+from servicex.utils import ServiceXUnknownDataRequestID
 
 from .ServiceX import ServiceXSourceCPPBase
 
@@ -35,6 +36,9 @@ class _local_file_copier:
         Returns:
             List[str]: List of the files
         '''
+        if request_id not in self._request_info_dict:
+            raise ServiceXUnknownDataRequestID(f'Files for request {request_id} not found')
+
         return [f.name for f in self._request_info_dict[request_id]]
 
     async def download_file(self,
