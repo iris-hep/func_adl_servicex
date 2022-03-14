@@ -119,7 +119,7 @@ class ServiceXDatasetSourceBase(EventDataset[T], ABC):
             if method_to_call == 'get_data_rootfiles_async':
                 # If we have no column names, then we must be using a dictionary to set them - so just pass that
                 # directly.
-                assert isinstance(col_names, (ast.List, ast.Constant)), f'Programming error - type name not known {type(col_names).__name__}'
+                assert isinstance(col_names, (ast.List, ast.Constant, ast.Str)), f'Programming error - type name not known {type(col_names).__name__}'
                 if isinstance(col_names, ast.List) and len(col_names.elts) == 0:
                     source = stream
                 else:
