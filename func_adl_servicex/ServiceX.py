@@ -66,7 +66,7 @@ class ServiceXDatasetSourceBase(EventDataset[T], ABC):
 
     @property
     def return_qastle(self) -> bool:
-        '''Get/Set flag indicating if we'll generate `qastle` rather than run the query when executed.
+        '''Get/Set `qastle` generation flag.
 
         If `True`, then execution of this query will return `qastle`, and if `False` then
         the query will be executed.
