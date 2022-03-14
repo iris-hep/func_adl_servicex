@@ -69,5 +69,5 @@ setup(name="func_adl_servicex",
           'func_adl_xAOD/backend': ['R21Code/*'],
       },
       platforms="Any",
-      python_requires='>=3.7, <3.10',
+      python_requires='>=3.6',
       )
