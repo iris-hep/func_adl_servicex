@@ -83,6 +83,35 @@ data = ds.Select("lambda e: {'lep_pt_1': e.lep_Pt_1, 'lep_pt_2': e.lep_Pt_2}") \
 print(data)
 ```
 
+## Running on Local Datasets
+
+It is possible to run on local files. This works well when testing or building out your code, but is horrible if you need to run on a large number of files. It is recommended to use this only with a single file. It is, for the most part, a drop-in replacement for the `ServiceX` backend version.
+
+First, you must install the `local` variant of `func_adl_servicex`. If you are using `pip`, you can do the following:
+
+```bash
+pip install func_adl_servicex[local]
+```
+
+With that installed, the following will work:
+
+```python
+from func_adl_servicex import SXLocalxAOD
+
+dataset_xaod = "my_local_xaod.root"
+ds = SXLocalxAOD(dataset_xaod)
+data = ds \
+    .SelectMany('lambda e: (e.Jets("AntiKt4EMTopoJets"))') \
+    .Where('lambda j: (j.pt()/1000)>30') \
+    .Select('lambda j: j.pt()') \
+    .AsAwkwardArray(["JetPt"]) \
+    .value()
+
+print(data['JetPt'])
+```
+
+And replace `SXLocalxAOD` with `SXLocalCMSRun1AOD` for using CMS backend (and, of course, update the query).
+
 ## Development
 
 PR's are welcome! Feel free to add an issue for new features or questions.
