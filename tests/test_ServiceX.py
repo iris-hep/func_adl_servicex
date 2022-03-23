@@ -194,7 +194,7 @@ def test_sx_xaod_awkward_single_column(async_mock):
 
     q.value()
 
-    sx.get_data_awkward_async.assert_called_with("(call ResultTTree (call Select (call EventDataset 'bogus.root') (lambda (list e) (attr e 'MET'))) 'met' 'treeme' 'junk.root')", title=None)
+    sx.get_data_awkward_async.assert_called_with("(call ResultTTree (call Select (call EventDataset 'bogus.root') (lambda (list e) (attr e 'MET'))) (list 'met') 'treeme' 'junk.root')", title=None)
 
 
 def test_sx_xaod_awkward_single_dict(async_mock):
