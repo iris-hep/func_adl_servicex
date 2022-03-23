@@ -32,12 +32,14 @@ from func_adl_servicex import ServiceXSourceXAOD
 
 dataset_xaod = "mc15_13TeV:mc15_13TeV.361106.PowhegPythia8EvtGen_AZNLOCTEQ6L1_Zee.merge.DAOD_STDM3.e3601_s2576_s2132_r6630_r6264_p2363_tid05630052_00"
 ds = ServiceXSourceXAOD(dataset_xaod)
-data = ds \
-    .SelectMany('lambda e: (e.Jets("AntiKt4EMTopoJets"))') \
-    .Where('lambda j: (j.pt()/1000)>30') \
-    .Select('lambda j: j.pt()') \
-    .AsAwkwardArray(["JetPt"]) \
+data = (
+    ds
+    .SelectMany('lambda e: (e.Jets("AntiKt4EMTopoJets"))')
+    .Where('lambda j: (j.pt()/1000)>30')
+    .Select('lambda j: j.pt()')
+    .AsAwkwardArray(["JetPt"])
     .value()
+)
 
 print(data['JetPt'])
 ```
@@ -51,13 +53,14 @@ from func_adl_servicex import ServiceXSourceCMSRun1AOD
 
 dataset_xaod = "cernopendata://16"
 ds = ServiceXSourceCMSRun1AOD(dataset_xaod)
-data = ds \
-data = ServiceXSourceCMSRun1AOD("cernopendata://16") \
-    .SelectMany(lambda e: e.TrackMuons("globalMuons")) \
-    .Where(lambda m: m.pt() > 30) \
-    .Select(lambda m: m.pt()) \
-    .AsAwkwardArray(['mu_pt']) \
+data = (
+    ds
+    .SelectMany(lambda e: e.TrackMuons("globalMuons"))
+    .Where(lambda m: m.pt() > 30)
+    .Select(lambda m: m.pt())
+    .AsAwkwardArray(['mu_pt'])
     .value()
+)
 
 print(data['mu_pt'])
 ```
@@ -76,8 +79,11 @@ uproot_transformer_image = "sslhep/servicex_func_adl_uproot_transformer:issue6"
 
 sx_dataset = ServiceXDataset(dataset_uproot, image=uproot_transformer_image)
 ds = ServiceXSourceUpROOT(sx_dataset, "nominal")
-data = ds.Select("lambda e: {'lep_pt_1': e.lep_Pt_1, 'lep_pt_2': e.lep_Pt_2}") \
-    .AsParquetFiles('junk.parquet') \
+data = (
+    ds.Select("lambda e: {
+        'lep_pt_1': e.lep_Pt_1,
+        'lep_pt_2': e.lep_Pt_2
+        }")
     .value()
 
 print(data)
@@ -100,12 +106,13 @@ from func_adl_servicex import SXLocalxAOD
 
 dataset_xaod = "my_local_xaod.root"
 ds = SXLocalxAOD(dataset_xaod)
-data = ds \
-    .SelectMany('lambda e: (e.Jets("AntiKt4EMTopoJets"))') \
-    .Where('lambda j: (j.pt()/1000)>30') \
-    .Select('lambda j: j.pt()') \
-    .AsAwkwardArray(["JetPt"]) \
+data = (ds
+    .SelectMany('lambda e: (e.Jets("AntiKt4EMTopoJets"))')
+    .Where('lambda j: (j.pt()/1000)>30')
+    .Select('lambda j: j.pt()')
+    .AsAwkwardArray(["JetPt"])
     .value()
+)
 
 print(data['JetPt'])
 ```
