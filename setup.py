@@ -28,7 +28,7 @@ setup(name="func_adl_servicex",
       license="TBD",
       test_suite="tests",
       install_requires=[
-          "func_adl>=2.3, <3.0",
+          "func_adl>=3.0b1",
           "qastle>=0.10, <1.0",
           "servicex>=2.4, <3.0a1"
       ],
@@ -48,7 +48,7 @@ setup(name="func_adl_servicex",
               'asyncmock'
           ],
           'local': [
-              'func_adl_xAOD[local]==1.5b4',
+              'func_adl_xAOD[local]>=2.0b1',
           ],
       },
       classifiers=[
@@ -69,5 +69,5 @@ setup(name="func_adl_servicex",
           'func_adl_xAOD/backend': ['R21Code/*'],
       },
       platforms="Any",
-      python_requires='>=3.7, <3.10',
+      python_requires='>=3.7',
       )

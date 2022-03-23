@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 import uuid
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple, TypeVar, Union
 
 import aiohttp
 from func_adl_xAOD.atlas.xaod import xAODDataset
@@ -9,6 +9,7 @@ from func_adl_xAOD.cms.aod import CMSRun1AODDataset
 from func_adl_xAOD.common.local_dataset import LocalDataset
 from qastle import text_ast_to_python_ast
 from servicex import ServiceXDataset
+from servicex.utils import ServiceXUnknownDataRequestID
 
 from .ServiceX import ServiceXSourceCPPBase
 
@@ -35,6 +36,9 @@ class _local_file_copier:
         Returns:
             List[str]: List of the files
         '''
+        if request_id not in self._request_info_dict:
+            raise ServiceXUnknownDataRequestID(f'Files for request {request_id} not found')
+
         return [f.name for f in self._request_info_dict[request_id]]
 
     async def download_file(self,
@@ -85,7 +89,10 @@ class _sx_local_file_adaptor:
         # Next, run the thing, and wait for it to finish
         query = json_query['selection']
         title = json_query['title'] if 'title' in json_query else ''
-        file_list = await self._ds.execute_result_async(text_ast_to_python_ast(query), title)
+        file_list = await self._ds.execute_result_async(
+            text_ast_to_python_ast(query).body[0].value,
+            title
+        )
 
         self._minio.associate_file(request_id, file_list)
 
@@ -117,10 +124,14 @@ class _sx_local_file_adaptor:
         return (0, 1, 0)
 
 
-class SXLocalCPP(ServiceXSourceCPPBase, ABC):
+T = TypeVar('T')
+
+
+class SXLocalCPP(ServiceXSourceCPPBase[T], ABC):
     def __init__(self, files: Union[str, List[str], Path, List[Path]],
                  docker_image: Optional[str] = None,
-                 docker_tag: Optional[str] = None):
+                 docker_tag: Optional[str] = None,
+                 item_type: type = Any):
         '''A local ServiceX-like dataset. Used for the C++ backends
 
         NOTE: This version of is not suitable for running large numbers of files or
@@ -144,7 +155,7 @@ class SXLocalCPP(ServiceXSourceCPPBase, ABC):
         )
 
         # And create our home body!
-        super().__init__(sx_ds, self._get_backend_type())
+        super().__init__(sx_ds, self._get_backend_type(), item_type)
 
     @classmethod
     @abstractmethod
@@ -165,7 +176,10 @@ class SXLocalCPP(ServiceXSourceCPPBase, ABC):
         'Return the backend type/name string'
 
 
-class SXLocalxAOD(SXLocalCPP):
+U = TypeVar('U')
+
+
+class SXLocalxAOD(SXLocalCPP[U]):
     @classmethod
     def _create_dataset(cls, files: Union[str, List[str], Path, List[Path]],
                         docker_image: Optional[str] = None,
@@ -191,7 +205,8 @@ class SXLocalxAOD(SXLocalCPP):
 
     def __init__(self, files: Union[str, List[str], Path, List[Path]],
                  docker_image: Optional[str] = None,
-                 docker_tag: Optional[str] = None):
+                 docker_tag: Optional[str] = None,
+                 item_type: type = Any):
         '''A local ServiceX-like dataset. Will run locally, in docker, synchronously.
 
         NOTE: This version of is not suitable for running large numbers of files or
@@ -200,10 +215,13 @@ class SXLocalxAOD(SXLocalCPP):
         Args:
             files (Union[str, List[str], Path, List[Path]]): List of files to run on.
         '''
-        super().__init__(files, docker_image, docker_tag)
+        super().__init__(files, docker_image, docker_tag, item_type)
 
 
-class SXLocalCMSRun1AOD(SXLocalCPP):
+V = TypeVar('V')
+
+
+class SXLocalCMSRun1AOD(SXLocalCPP[V]):
     @classmethod
     def _create_dataset(cls, files: Union[str, List[str], Path, List[Path]],
                         docker_image: Optional[str] = None,
@@ -229,7 +247,8 @@ class SXLocalCMSRun1AOD(SXLocalCPP):
 
     def __init__(self, files: Union[str, List[str], Path, List[Path]],
                  docker_image: Optional[str] = None,
-                 docker_tag: Optional[str] = None):
+                 docker_tag: Optional[str] = None,
+                 item_type: type = Any):
         '''A local ServiceX-like dataset. Will run locally, in docker, synchronously.
 
         NOTE: This version of is not suitable for running large numbers of files or
@@ -238,4 +257,4 @@ class SXLocalCMSRun1AOD(SXLocalCPP):
         Args:
             files (Union[str, List[str], Path, List[Path]]): List of files to run on.
         '''
-        super().__init__(files, docker_image, docker_tag)
+        super().__init__(files, docker_image, docker_tag, item_type)

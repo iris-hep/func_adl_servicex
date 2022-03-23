@@ -80,6 +80,7 @@ def test_good_call_cms(CMSRun1AODDataset_mock):
     assert CMSRun1AODDataset_mock[1].execute_result_async.call_count == 1
     query = CMSRun1AODDataset_mock[1].execute_result_async.call_args[0][0]
     assert "pt" in ast.dump(query)
+    assert "Module" not in ast.dump(query)
     assert len(CMSRun1AODDataset_mock[1].execute_result_async.call_args[0][1]) == 0
 
     assert len(v) == 1
