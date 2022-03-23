@@ -6,6 +6,7 @@ from typing import Optional
 import pytest
 from func_adl import ObjectStream
 from servicex import ServiceXDataset
+import awkward as ak
 
 from func_adl_servicex import (FuncADLServerException,
                                ServiceXSourceUpROOT,
@@ -212,6 +213,7 @@ def test_sx_xaod_awkward_single_dict(async_mock):
 def test_sx_xaod_awkward_no_columns(async_mock):
     'Test a request for awkward arrays from an xAOD backend'
     sx = async_mock(spec=ServiceXDataset)
+    sx.get_data_awkward_async.return_value = ak.Array({'col1': [1, 2, 3]})
     sx.first_supported_datatype.return_value = 'root'
     ds = ServiceXSourceXAOD(sx)
     q = ds.Select("lambda e: e.MET").AsAwkwardArray()
@@ -219,6 +221,30 @@ def test_sx_xaod_awkward_no_columns(async_mock):
     q.value()
 
     sx.get_data_awkward_async.assert_called_with("(call Select (call EventDataset 'bogus.root') (lambda (list e) (attr e 'MET')))", title=None)
+
+
+def test_sx_xaod_awkward_no_column_direct(async_mock):
+    'Get the ak.Array directly with no dict access if we do not specify a column'
+    sx = async_mock(spec=ServiceXDataset)
+    sx.get_data_awkward_async.return_value = ak.Array({'col1': [1, 2, 3]})
+    sx.first_supported_datatype.return_value = 'root'
+    ds = ServiceXSourceXAOD(sx)
+    q = ds.Select("lambda e: e.MET").AsAwkwardArray()
+
+    r = q.value()
+    assert str(ak.type(r)) == '3 * int64'
+
+
+def test_sx_xaod_awkward_col_name_direct(async_mock):
+    'Get the ak.Array directly with no dict access if we do not specify a column'
+    sx = async_mock(spec=ServiceXDataset)
+    sx.get_data_awkward_async.return_value = ak.Array({'col1': [1, 2, 3]})
+    sx.first_supported_datatype.return_value = 'root'
+    ds = ServiceXSourceXAOD(sx)
+    q = ds.Select("lambda e: e.MET").AsAwkwardArray('col1')
+
+    r = q.value()
+    assert str(ak.type(r)) == '3 * {"col1": int64}'
 
 
 def test_sx_xaod_pandas(async_mock):

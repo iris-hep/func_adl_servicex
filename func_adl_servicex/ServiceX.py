@@ -10,6 +10,8 @@ from qastle import python_ast_to_text_ast
 from servicex import ServiceXDataset
 from servicex.utils import DatasetType
 
+from func_adl_servicex.util_query_ast import has_col_names
+
 
 class FuncADLServerException (Exception):
     'Thrown when an exception happens contacting the server'
@@ -173,9 +175,16 @@ class ServiceXDatasetSourceBase(EventDataset[T], ABC):
             else:
                 raise FuncADLServerException(f'Internal error - asked for {a_func.id} - but this dataset does not support it.')
 
-        # Run ghe query for real!
+        # Run the query for real!
         attr = getattr(self._ds, name)
-        return await attr(q_str, title=title)
+        result = await attr(q_str, title=title)
+
+        # If this is a single column awkward query, and the user did not specify a column name, then
+        # we will return the first column.
+        if 'awkward' in name and (not has_col_names(a)) and 'key="col1"' in str(result.layout):
+            result = result['col1']
+
+        return result
 
 
 class ServiceXSourceCPPBase(ServiceXDatasetSourceBase[T]):
