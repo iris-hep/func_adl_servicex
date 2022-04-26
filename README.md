@@ -10,7 +10,7 @@ Send func_adl expressions to a ServiceX endpoint
 
 ## Introduction
 
-This package contains the single object `ServiceXSourceXAOD` and ``ServiceXSourceUpROOT` which can be used as a root of a `func_adl` expression to query large LHC datasets from an active `ServiceX` instance located on the net.
+This package contains the single object `ServiceXSourceXAOD` and `ServiceXSourceUpROOT` which can be used as a root of a `func_adl` expression to query large LHC datasets from an active `ServiceX` instance located on the net.
 
 See below for simple examples.
 
