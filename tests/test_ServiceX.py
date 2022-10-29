@@ -226,8 +226,17 @@ def test_sx_uproot_parquet_title(async_mock):
 
     q.value(title="no way")
 
+    actual_call = python_ast_to_text_ast(
+        cast(
+            ast.Expr,
+            ast.parse(
+                "Select(Select(EventDataset('bogus.root', 'my_tree'), lambda e: e.MET), lambda x: {'met': x})"
+            ).body[0],
+        ).value
+    )
+
     sx.get_data_parquet_async.assert_called_with(
-        "(call ResultParquet (call Select (call EventDataset 'bogus.root' 'my_tree') (lambda (list e) (attr e 'MET'))) (list 'met') 'junk.parquet')",
+        actual_call,
         title="no way",
     )
 
@@ -242,10 +251,16 @@ def test_sx_uproot_parquet_qastle(async_mock):
 
     result = q.value()
 
-    assert (
-        result
-        == "(call ResultParquet (call Select (call EventDataset 'bogus.root' 'my_tree') (lambda (list e) (attr e 'MET'))) (list 'met') 'junk.parquet')"
+    actual_call = python_ast_to_text_ast(
+        cast(
+            ast.Expr,
+            ast.parse(
+                "Select(Select(EventDataset('bogus.root', 'my_tree'), lambda e: e.MET), lambda x: {'met': x})"
+            ).body[0],
+        ).value
     )
+
+    assert result == actual_call
     sx.get_data_parquet_async.assert_not_called()
 
 
