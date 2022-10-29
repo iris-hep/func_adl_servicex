@@ -21,7 +21,7 @@ See below for simple examples.
 
 ## Usage
 
-To use `func_adl` on `servicex`, the only `func_adl` package you only need to install this package. All others required will be pulled in as dependencies of this package.
+To use `func_adl` on `servicex`, the only `func_adl` package you need to install this package. All others required will be pulled in as dependencies of this package.
 
 ## Using the xAOD backend
 
