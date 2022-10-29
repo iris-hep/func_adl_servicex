@@ -1,7 +1,8 @@
 import ast
 from func_adl_servicex.ServiceX import ServiceXDatasetSourceBase
+from qastle import python_ast_to_text_ast
 import sys
-from typing import Optional
+from typing import Optional, cast
 
 import pytest
 from func_adl import ObjectStream
@@ -71,7 +72,7 @@ def test_sx_uproot_root(async_mock):
     assert "not supported" in str(e.value)
 
 
-def test_sx_uproot_parquet(async_mock):
+def test_sx_uproot_parquet_one_col(async_mock):
     "Test a request for parquet files as parquet files works"
     sx = async_mock(spec=ServiceXDataset)
     sx.first_supported_datatype.return_value = "parquet"
@@ -80,8 +81,119 @@ def test_sx_uproot_parquet(async_mock):
 
     q.value()
 
+    actual_call = python_ast_to_text_ast(
+        cast(
+            ast.Expr,
+            ast.parse(
+                "Select(Select(EventDataset('bogus.root', 'my_tree'), lambda e: e.MET), lambda x: {'met': x})"
+            ).body[0],
+        ).value
+    )
+
     sx.get_data_parquet_async.assert_called_with(
-        "(call ResultParquet (call Select (call EventDataset 'bogus.root' 'my_tree') (lambda (list e) (attr e 'MET'))) (list 'met') 'junk.parquet')",
+        actual_call,
+        title=None,
+    )
+
+
+def test_sx_uproot_parquet_one_col_where(async_mock):
+    "Test a request for parquet files as parquet files works, protected by a where"
+    sx = async_mock(spec=ServiceXDataset)
+    sx.first_supported_datatype.return_value = "parquet"
+    ds = ServiceXSourceUpROOT(sx, "my_tree")
+    q = (
+        ds.Select("lambda e: e.MET")
+        .Where("lambda x: x > 10")
+        .AsParquetFiles("junk.parquet", ["met"])
+    )
+
+    q.value()
+
+    actual_call = python_ast_to_text_ast(
+        cast(
+            ast.Expr,
+            ast.parse(
+                "Select(Where(Select(EventDataset('bogus.root', 'my_tree'), lambda e: e.MET), lambda x: x > 10), lambda x: {'met': x})"
+            ).body[0],
+        ).value
+    )
+
+    sx.get_data_parquet_async.assert_called_with(
+        actual_call,
+        title=None,
+    )
+
+
+def test_sx_uproot_parquet_one_col_tuple(async_mock):
+    "Test a request for parquet files as parquet files works"
+    sx = async_mock(spec=ServiceXDataset)
+    sx.first_supported_datatype.return_value = "parquet"
+    ds = ServiceXSourceUpROOT(sx, "my_tree")
+    q = ds.Select("lambda e: (e.MET, )").AsParquetFiles("junk.parquet", ["met"])
+
+    q.value()
+
+    actual_call = python_ast_to_text_ast(
+        cast(
+            ast.Expr,
+            ast.parse(
+                "Select(Select(EventDataset('bogus.root', 'my_tree'), lambda e: (e.MET,)), lambda x: {'met': x[0]})"
+            ).body[0],
+        ).value
+    )
+
+    sx.get_data_parquet_async.assert_called_with(
+        actual_call,
+        title=None,
+    )
+
+
+def test_sx_uproot_parquet_no_columns(async_mock):
+    "Test a request for parquet files as parquet files works"
+    sx = async_mock(spec=ServiceXDataset)
+    sx.first_supported_datatype.return_value = "parquet"
+    ds = ServiceXSourceUpROOT(sx, "my_tree")
+    q = ds.Select("lambda e: {'MET': e.MET}").AsParquetFiles("junk.parquet")
+
+    q.value()
+
+    actual_call = python_ast_to_text_ast(
+        cast(
+            ast.Expr,
+            ast.parse(
+                "Select(EventDataset('bogus.root', 'my_tree'), lambda e: {'MET': e.MET})"
+            ).body[0],
+        ).value
+    )
+
+    sx.get_data_parquet_async.assert_called_with(
+        actual_call,
+        title=None,
+    )
+
+
+def test_sx_uproot_parquet_multiple_columns(async_mock):
+    "Test a request for parquet files as parquet files works"
+    sx = async_mock(spec=ServiceXDataset)
+    sx.first_supported_datatype.return_value = "parquet"
+    ds = ServiceXSourceUpROOT(sx, "my_tree")
+    q = ds.Select("lambda e: (e.MET, e.MET)").AsParquetFiles(
+        "junk.parquet", ["met1", "met2"]
+    )
+
+    q.value()
+
+    actual_call = python_ast_to_text_ast(
+        cast(
+            ast.Expr,
+            ast.parse(
+                "Select(Select(EventDataset('bogus.root', 'my_tree'), lambda e: (e.MET, e.MET)), lambda x: {'met1': x[0], 'met2': x[1]})"
+            ).body[0],
+        ).value
+    )
+
+    sx.get_data_parquet_async.assert_called_with(
+        actual_call,
         title=None,
     )
 
