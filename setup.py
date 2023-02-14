@@ -46,7 +46,7 @@ setup(
             "black",
         ],
         "local": [
-            "func_adl_xAOD[local]>=2.6b3",
+            "func_adl_xAOD[local]",
         ],
     },
     classifiers=[
