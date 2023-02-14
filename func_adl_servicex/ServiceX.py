@@ -321,7 +321,7 @@ class ServiceXSourceUpROOT(ServiceXDatasetSourceBase[T]):
         """
         super().__init__(sx, backend_name, item_type)
 
-        # Modify the argument list in EventDataSset to include a dummy filename and
+        # Modify the argument list in EventDataSet to include a dummy filename and
         # tree name
         self.query_ast.args.append(ast.Str(s="bogus.root"))  # type: ignore
         self.query_ast.args.append(ast.Str(s=treename))  # type: ignore
