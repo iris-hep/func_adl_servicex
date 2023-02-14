@@ -341,7 +341,7 @@ def test_sx_xaod_root(async_mock):
 def test_sx_xaod_awkward(async_mock):
     "Test a request for awkward arrays from an xAOD backend"
     sx = async_mock(spec=ServiceXDataset)
-    sx.first_supported_datatype.return_value = "root"
+    sx.first_supported_datatype.return_value = "root-file"
     ds = ServiceXSourceXAOD(sx)
     q = ds.Select("lambda e: e.MET").AsAwkwardArray(["met"])
 
@@ -356,7 +356,7 @@ def test_sx_xaod_awkward(async_mock):
 def test_sx_xaod_awkward_single_column(async_mock):
     "Test a request for awkward arrays from an xAOD backend, as column name"
     sx = async_mock(spec=ServiceXDataset)
-    sx.first_supported_datatype.return_value = "root"
+    sx.first_supported_datatype.return_value = "root-file"
     ds = ServiceXSourceXAOD(sx)
     q = ds.Select("lambda e: e.MET").AsAwkwardArray("met")
 
@@ -371,7 +371,7 @@ def test_sx_xaod_awkward_single_column(async_mock):
 def test_sx_xaod_awkward_single_dict(async_mock):
     "Test a request for awkward arrays from an xAOD backend, as dict labelting"
     sx = async_mock(spec=ServiceXDataset)
-    sx.first_supported_datatype.return_value = "root"
+    sx.first_supported_datatype.return_value = "root-file"
     ds = ServiceXSourceXAOD(sx)
     q = ds.Select("lambda e: {'met': e.MET}").AsAwkwardArray()
 
@@ -387,7 +387,7 @@ def test_sx_xaod_awkward_no_columns(async_mock):
     "Test a request for awkward arrays from an xAOD backend"
     sx = async_mock(spec=ServiceXDataset)
     sx.get_data_awkward_async.return_value = ak.Array({"col1": [1, 2, 3]})
-    sx.first_supported_datatype.return_value = "root"
+    sx.first_supported_datatype.return_value = "root-file"
     ds = ServiceXSourceXAOD(sx)
     q = ds.Select("lambda e: e.MET").AsAwkwardArray()
 
@@ -403,7 +403,7 @@ def test_sx_xaod_awkward_no_column_direct(async_mock):
     "Get the ak.Array directly with no dict access if we do not specify a column"
     sx = async_mock(spec=ServiceXDataset)
     sx.get_data_awkward_async.return_value = ak.Array({"col1": [1, 2, 3]})
-    sx.first_supported_datatype.return_value = "root"
+    sx.first_supported_datatype.return_value = "root-file"
     ds = ServiceXSourceXAOD(sx)
     q = ds.Select("lambda e: e.MET").AsAwkwardArray()
 
@@ -415,7 +415,7 @@ def test_sx_xaod_awkward_col_name_direct(async_mock):
     "Get the ak.Array directly with no dict access if we do not specify a column"
     sx = async_mock(spec=ServiceXDataset)
     sx.get_data_awkward_async.return_value = ak.Array({"col1": [1, 2, 3]})
-    sx.first_supported_datatype.return_value = "root"
+    sx.first_supported_datatype.return_value = "root-file"
     ds = ServiceXSourceXAOD(sx)
     q = ds.Select("lambda e: e.MET").AsAwkwardArray("col1")
 
@@ -426,7 +426,7 @@ def test_sx_xaod_awkward_col_name_direct(async_mock):
 def test_sx_xaod_pandas(async_mock):
     "Test a request for awkward arrays from an xAOD backend"
     sx = async_mock(spec=ServiceXDataset)
-    sx.first_supported_datatype.return_value = "root"
+    sx.first_supported_datatype.return_value = "root-file"
     ds = ServiceXSourceXAOD(sx)
     q = ds.Select("lambda e: e.MET").AsPandasDF(["met"])
 

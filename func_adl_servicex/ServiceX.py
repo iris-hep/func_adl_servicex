@@ -42,7 +42,7 @@ class ServiceXDatasetSourceBase(EventDataset[T], ABC):
 
     # If it comes down to format, what are we going to grab?
     _format_map = {
-        "root": "get_data_rootfiles_async",
+        "root-file": "get_data_rootfiles_async",
         "parquet": "get_data_parquet_async",
     }
 
@@ -51,7 +51,7 @@ class ServiceXDatasetSourceBase(EventDataset[T], ABC):
 
     # If we have a choice of formats, what can we do, in
     # prioritized order?
-    _format_list = ["parquet", "root"]
+    _format_list = ["parquet", "root-file"]
 
     def __init__(
         self,
@@ -95,7 +95,7 @@ class ServiceXDatasetSourceBase(EventDataset[T], ABC):
         """
         if (
             f_name == "ResultTTree"
-            and self._ds.first_supported_datatype("root") is None
+            and self._ds.first_supported_datatype("root-file") is None
         ) or (
             f_name == "ResultParquet"
             and self._ds.first_supported_datatype("parquet") is None
@@ -125,7 +125,7 @@ class ServiceXDatasetSourceBase(EventDataset[T], ABC):
         source = a
         if top_function in self._execute_locally:
             # Request the default type here
-            default_format = self._ds.first_supported_datatype(["parquet", "root"])
+            default_format = self._ds.first_supported_datatype(["parquet", "root-file"])
             assert default_format is not None, "Unsupported ServiceX returned format"
             method_to_call = self._format_map[default_format]
 
@@ -239,7 +239,7 @@ class ServiceXDatasetSourceBase(EventDataset[T], ABC):
         if a_func.id in self._ds_map:
             name = self._ds_map[a_func.id]
         else:
-            data_type = self._ds.first_supported_datatype(["parquet", "root"])
+            data_type = self._ds.first_supported_datatype(["parquet", "root-file"])
             if data_type is not None and data_type in self._format_map:
                 name = self._format_map[data_type]
             else:
