@@ -28,7 +28,7 @@ setup(
     url="https://github.com/iris-hep/func_adl_servicex",
     license="TBD",
     test_suite="tests",
-    install_requires=["func_adl>=3.2", "qastle>=0.10", "servicex>=2.6.1b1"],
+    install_requires=["func_adl>=3.2", "qastle>=0.10", "servicex>=2.6.1b1,<2.6.2"],
     extras_require={
         "test": [
             "pytest>=3.9",
