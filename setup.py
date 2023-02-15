@@ -28,7 +28,7 @@ setup(
     url="https://github.com/iris-hep/func_adl_servicex",
     license="TBD",
     test_suite="tests",
-    install_requires=["func_adl>=3.2", "qastle>=0.10", "servicex>=2.6.1b1,<2.6.2"],
+    install_requires=["func_adl>=3.2", "qastle>=0.10", "servicex>=2.6.1"],
     extras_require={
         "test": [
             "pytest>=3.9",
@@ -51,12 +51,13 @@ setup(
     },
     classifiers=[
         # "Development Status :: 3 - Alpha",
-        "Development Status :: 4 - Beta",
-        # "Development Status :: 5 - Production/Stable",
+        # "Development Status :: 4 - Beta",
+        "Development Status :: 5 - Production/Stable",
         # "Development Status :: 6 - Mature",
         "Intended Audience :: Developers",
         "Intended Audience :: Information Technology",
         "Programming Language :: Python",
+        "Programming Language :: Python :: 3.11",
         "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.8",
