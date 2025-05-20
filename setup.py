@@ -37,7 +37,6 @@ setup(
             "pytest-cov",
             "coverage",
             "flake8",
-            "codecov",
             "autopep8",
             "twine",
             "testfixtures",
